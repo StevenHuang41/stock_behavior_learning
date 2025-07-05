@@ -1,0 +1,29 @@
+Final value holding:
+                 cash=26.534805297851562
+                 shares=39732.5
+                 Value=39759.03480529785
+Final value Dsarsa:
+                 cash=2.1517333984375
+                 shares=67718.0
+                 Value=67720.15173339844
+
+
+Best actions & Q_table values:
+['up' 'high' 'empty']        -> buy	buy: -0.0958 sell: -2.1349 hold: -0.0997
+['up' 'high' 'holding']      -> hold	buy: -2.1076 sell: -0.1388 hold: -0.0636
+['up' 'low' 'empty']         -> buy	buy: -0.0897 sell: -2.1410 hold: -0.0998
+['up' 'low' 'holding']       -> hold	buy: -2.1015 sell: -0.1449 hold: -0.0638
+['up' 'normal' 'empty']      -> hold	buy: -0.1082 sell: -2.1226 hold: -0.0995
+['up' 'normal' 'holding']    -> hold	buy: -2.1200 sell: -0.1265 hold: -0.0634
+['down' 'high' 'empty']      -> hold	buy: -0.1114 sell: -2.1194 hold: -0.0995
+['down' 'high' 'holding']    -> hold	buy: -2.1232 sell: -0.1233 hold: -0.0634
+['down' 'low' 'empty']       -> hold	buy: -0.1053 sell: -2.1255 hold: -0.0996
+['down' 'low' 'holding']     -> hold	buy: -2.1171 sell: -0.1294 hold: -0.0635
+['down' 'normal' 'empty']    -> hold	buy: -0.1238 sell: -2.1071 hold: -0.0992
+['down' 'normal' 'holding']  -> hold	buy: -2.1356 sell: -0.1111 hold: -0.0631
+['stable' 'high' 'empty']    -> buy	buy: +0.1158 sell: -2.1079 hold: -0.1108
+['stable' 'high' 'holding']  -> hold	buy: -1.9155 sell: -0.1377 hold: -0.0730
+['stable' 'low' 'empty']     -> buy	buy: +0.1078 sell: -2.1327 hold: -0.1096
+['stable' 'low' 'holding']   -> hold	buy: -1.9234 sell: -0.1625 hold: -0.0718
+['stable' 'normal' 'empty']  -> buy	buy: +0.0012 sell: -2.2312 hold: -0.1015
+['stable' 'normal' 'holding']-> hold	buy: -2.0106 sell: -0.2351 hold: -0.0654

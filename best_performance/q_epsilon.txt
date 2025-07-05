@@ -1,0 +1,29 @@
+Final value holding:
+                 cash=26.534805297851562
+                 shares=39732.5
+                 Value=39759.03480529785
+Final value q_learning:
+                 cash=15.568450927734375
+                 shares=56316.5
+                 Value=56332.068450927734
+
+
+Best actions & Q_table values:
+('up', 'high', 'empty')         -> buy     buy : +1.1650  sell: -0.3485  hold: +0.4586  
+('up', 'high', 'holding')       -> hold    buy : +0.0739  sell: +0.8040  hold: +0.9504  
+('up', 'low', 'empty')          -> buy     buy : +0.5543  sell: -0.4077  hold: +0.4746  
+('up', 'low', 'holding')        -> hold    buy : -0.1718  sell: +0.4314  hold: +1.1002  
+('up', 'normal', 'empty')       -> buy     buy : +1.0698  sell: -0.3542  hold: +0.4360  
+('up', 'normal', 'holding')     -> hold    buy : +0.1049  sell: +0.5979  hold: +1.2335  
+('down', 'high', 'empty')       -> buy     buy : +0.5456  sell: -0.5804  hold: +0.3911  
+('down', 'high', 'holding')     -> sell    buy : -0.4692  sell: +0.5182  hold: +0.2844  
+('down', 'low', 'empty')        -> buy     buy : +0.5151  sell: -0.5190  hold: +0.3910  
+('down', 'low', 'holding')      -> hold    buy : -0.5604  sell: +0.3699  hold: +0.5246  
+('down', 'normal', 'empty')     -> buy     buy : +0.5968  sell: -0.5760  hold: +0.3717  
+('down', 'normal', 'holding')   -> sell    buy : -0.5803  sell: +0.5768  hold: +0.3948  
+('stable', 'high', 'empty')     -> buy     buy : +0.0000  sell: +0.0000  hold: +0.0000  
+('stable', 'high', 'holding')   -> buy     buy : +0.0000  sell: +0.0000  hold: +0.0000  
+('stable', 'low', 'empty')      -> buy     buy : +0.0000  sell: +0.0000  hold: +0.0000  
+('stable', 'low', 'holding')    -> buy     buy : +0.0000  sell: +0.0000  hold: +0.0000  
+('stable', 'normal', 'empty')   -> buy     buy : +0.0000  sell: +0.0000  hold: +0.0000  
+('stable', 'normal', 'holding') -> buy     buy : +0.0000  sell: +0.0000  hold: +0.0000
