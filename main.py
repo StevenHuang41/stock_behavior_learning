@@ -4,11 +4,18 @@ import numpy as np
 import pandas as pd
 import matplotlib as plt
 import yfinance as yf
+import itertools
 
 from packages.preprocess import prerpocess
 # note: 2025/6/6-9 stock split
 
+# states
+TRENDS = ['up', 'down', 'stable']
+VOLUME_STATUS = ['high', 'low', 'normal']
+PORTFOLIO_STATUS = ['empty', 'holding']
+ACTIONS = ['buy', 'sell', 'hold']
 
+STATES = list(itertools.product(TRENDS, VOLUME_STATUS, PORTFOLIO_STATUS))
 
 def main():
 
@@ -23,10 +30,12 @@ def main():
     stock_data = stock_data.droplevel('Ticker', axis=1)
 
     # fill 0 volume with avg_volume
+    # add avg of n days closing price
+    # add trend state
+    # add volume state
     stock_data = prerpocess(stock_data)
 
-    # add additional column of n days avg_Close price
-
+    print(stock_data)
 
 
 
