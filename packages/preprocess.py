@@ -80,13 +80,14 @@ def prerpocess(
 if __name__ == "__main__":
     import yfinance as yf
 
-    stock_data = yf.download("0050.TW", period="max", auto_adjust=True)
+    stock_data = yf.download("0050.TW",
+                             period="max",
+                             auto_adjust=True)
 
     stock_data = prerpocess(stock_data,
                             hasStockSplited=True,
                             split_date='2025-06-06',
                             split_ratio=4)
 
-    pd.set_option('display.max_rows', None)
 
     print(stock_data)

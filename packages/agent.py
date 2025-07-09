@@ -65,7 +65,6 @@ class RLAgent:
             elif action == 'sell':
                 if buy_price > 0:
                     r += (price - buy_price) / buy_price
-                    # r *= 20
                 else : # buy_price == 0
                     r = 0
             else : # action == 'hold'
@@ -329,31 +328,28 @@ class RLAgent:
         ## show fig
         plt.show()
 
-        print(f"Final value traditional strategy:\n \
-                cash={cash_tra}\n \
-                shares={shares_tra * close_prices[-1]}\n \
-                Value={values_tra[-1]}")
-        print(f"Final value {self.policy}:\n \
-                cash={cash}\n \
-                shares={shares * close_prices[-1]}\n \
-                Value={values_learning[-1]}")
+        print(f"Final value traditional strategy:\n"
+              f"    cash={cash_tra}\n"
+              f"    shares={shares_tra * close_prices[-1]}\n"
+              f"    Value={values_tra[-1]}")
 
-def show_q_table(agent):
-    for k in agent.Q_table.keys():
-        best_action = max(agent.Q_table[k], key=agent.Q_table[k].get)
-        print(f"{str(k):<50} -> {best_action:<8}", end='')
-        for i, v in agent.Q_table[k].items():
-            print(f"{i:<4}: {v:+.4f}", end='  ')
+        print(f"Final value {self.policy}:\n"
+              f"    cash={cash}\n"
+              f"    shares={shares * close_prices[-1]}\n"
+              f"    Value={values_learning[-1]}")
 
-        print()
+    def show_q_table(self):
+        print(f'{'States':<45}|{'Best Action':<15}| q values')
+        print('-' * 110)
+        for k in self.Q_table.keys():
+            best_action = max(self.Q_table[k], key=self.Q_table[k].get)
+            print(f"{str(k):<45}|{best_action:<15}| ", end='')
+            for i, v in self.Q_table[k].items():
+                print(f"{i:<4}: {v:+.4f}", end='    ')
+
+            print()
 
 if __name__ == "__main__":
-    q_epsilon_agent = RLAgent(
-        policy='q_learning',
-        action_policy='epsilon_greedy',
-        gamma=0.9,
-    )
-
     from preprocess import prerpocess
     import yfinance as yf
 
@@ -364,7 +360,13 @@ if __name__ == "__main__":
                             split_date='2025-06-06',
                             split_ratio=4)
 
+    q_epsilon_agent = RLAgent(
+        policy='q_learning',
+        action_policy='epsilon_greedy',
+        gamma=0.9,
+    )
+
     q_epsilon_agent.train(stock_data)
     q_epsilon_agent.evaluate_learning(stock_data)
 
-    show_q_table(q_epsilon_agent)
+    q_epsilon_agent.show_q_table()

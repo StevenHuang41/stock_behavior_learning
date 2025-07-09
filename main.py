@@ -20,33 +20,35 @@ ACTIONS = ['buy', 'sell', 'hold']
 def main():
 
     # get stock number
-    if len(sys.argv) > 1:
+    if len(sys.argv) == 2:
         stock_no = sys.argv[1]
+
+    elif len(sys.argv) == 4:
+        splited = True
+        stock_no = (sys.argv[1]).strip()
+        split_date = (sys.argv[2]).strip()
+        split_ratio = float((sys.argv[3]).strip())
     else :
         stock_no = input("Enter a Stock number:\n")
+        splited = input(f"Has {stock_no} splited?\n")
+        splited = splited.strip().lower()
+        splited = True if 'y' in splited else False
+        if splited:
+            split_date = input("When did it split? ['YYYY-MM-DD']\n").strip()
+            split_ratio = float(input("What is the split ratio? (n-for-1)\n").strip())
 
-    # remove redundant column
+    # download stock data from yf
     stock_data = yf.download(stock_no, period="max", auto_adjust=True)
-    stock_data = stock_data.droplevel('Ticker', axis=1)
 
-    # fill 0 volume with avg_volume
-    # add avg of n days closing price
-    # add trend state
-    # add volume state
-    stock_data = prerpocess(stock_data)
+    # do preprocessing
+    stock_data = prerpocess(stock_data,
+                            hasStockSplited=splited,
+                            split_date=split_date,
+                            split_ratio=split_ratio)
+
+    # pd.set_option('display.max_rows', None)
 
     print(stock_data)
-    print(*STATES, sep='\n')
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
