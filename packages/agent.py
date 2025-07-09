@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import itertools
 from typing import Literal
 import os
+from tqdm import tqdm
 
 class RLAgent:
     def __init__(
@@ -44,9 +45,8 @@ class RLAgent:
     def get_reward(
         self,
         price, previous_price, buy_price,
-        state, action
+        pre_portfolio, action
     ) -> float:
-        *_, pre_portfolio = state
      
         r = (price - previous_price) / previous_price
         if pre_portfolio == 'empty':
@@ -123,13 +123,10 @@ class RLAgent:
         close_prices = df.iloc[:, 1].to_numpy()
         feature_cols = df.iloc[:, 2:].to_numpy()
 
-        for episode in range(self.episodes):
-            if episode % 100 == 0:
-                if self.action_policy == 'epsilon_greedy':
-                    print(f"    episode {episode:>4} progressing, epsilon {self.epsilon:.4f} ...")
-                else :
-                    print(f"    episode {episode:>4} progressing, tau {self.tau:.4f} ...")
-                
+        pbar = tqdm(range(self.episodes))
+        for episode in pbar:
+            pbar.set_description(f"Episode: {episode + 1}")
+
             ## Initialize protfolio status
             portfolio = 'empty'
             buy_price = 0
@@ -143,11 +140,7 @@ class RLAgent:
                 previous_price = close_prices[i - 1]
                 price = open_prices[i]
 
-                ## calculate reward
-                reward = self.get_reward(
-                    price, previous_price, buy_price, state, action
-                )
-
+                pre_portfolio = portfolio
                 ## execute action
                 if action == 'buy' and portfolio == 'empty':
                     buy_price = price
@@ -155,6 +148,11 @@ class RLAgent:
                 elif action == 'sell' and portfolio == 'holding':
                     buy_price = 0
                     portfolio = 'empty'
+
+                ## calculate reward
+                reward = self.get_reward(
+                    price, previous_price, buy_price, pre_portfolio, action
+                )
 
                 ## get new state
                 next_state = (*feature_cols[i], portfolio)
@@ -180,7 +178,7 @@ class RLAgent:
             price = open_prices[-1]
 
             reward = self.get_reward(price, previous_price, buy_price,
-                                     state, action)
+                                     pre_portfolio, action)
             
             self.update_Q_table(state, action, reward, done=True)
 
@@ -198,9 +196,6 @@ class RLAgent:
                 self.tau = self.tau - self.tau_dec \
                             if self.tau > self.tau_min \
                             else self.tau_min
-            
-
-        print("=" * 10, "Finished Training", "=" * 10)
             
     def evaluate_learning(self, df: pd.DataFrame, initial_cash=10000):
         ## Initial status
@@ -303,7 +298,6 @@ class RLAgent:
         plt.figtext(1.25, 0.7,  f'holding growth:  {hpc:^+9.2f} %', fontsize=12, color=hpc_c)
         plt.figtext(1.25, 0.65, f'relative change: {cpc:^+9.2f} %', fontsize=12, color=cpc_c)
         plt.legend()
-        # plt.tight_layout()
 
         ## save fig
         images_dir = os.path.join(os.getcwd(), 'images')
@@ -312,17 +306,18 @@ class RLAgent:
         plt.savefig(os.path.join(images_dir, fig_fname), bbox_inches='tight')
 
         ## show fig
+        plt.tight_layout()
         plt.show()
 
-        print(f"Final value traditional strategy:\n"
+        print(f"\nFinal value traditional strategy:\n"
               f"    cash={cash_tra}\n"
               f"    shares={shares_tra * close_prices[-1]}\n"
               f"    Value={values_tra[-1]}")
 
-        print(f"Final value {self.policy}:\n"
+        print(f"\nFinal value {self.policy}:\n"
               f"    cash={cash}\n"
               f"    shares={shares * close_prices[-1]}\n"
-              f"    Value={values_learning[-1]}")
+              f"    Value={values_learning[-1]}\n")
 
     def show_q_table(self):
         print(f'{'States':<45}|{'Best Action':<15}| q values')
