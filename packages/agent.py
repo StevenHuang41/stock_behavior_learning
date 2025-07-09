@@ -117,20 +117,6 @@ class RLAgent:
             update_value - self.Q_table[state][action]
         )
 
-    def execute_action(
-        action: str,
-        portfolio: str,
-        current_price: float,
-        buy_price: float
-    ) -> tuple[float, str]:
-
-
-
-        print('in execute:')
-        print(buy_price, portfolio)
-        
-        return buy_price, portfolio
-
     def train(self, df: pd.DataFrame):
         print(f"{self.policy} agent:")
         open_prices = df.iloc[:, 0].to_numpy()
