@@ -13,9 +13,9 @@ from packages.preprocess import prerpocess
 TRENDS = ['up', 'down', 'stable']
 VOLUME_STATUS = ['high', 'low', 'normal']
 PORTFOLIO_STATUS = ['empty', 'holding']
-ACTIONS = ['buy', 'sell', 'hold']
+STATES = list(itertools.product(*[TRENDS] * 2, VOLUME_STATUS, PORTFOLIO_STATUS))
 
-STATES = list(itertools.product(TRENDS, VOLUME_STATUS, PORTFOLIO_STATUS))
+ACTIONS = ['buy', 'sell', 'hold']
 
 def main():
 
@@ -36,6 +36,7 @@ def main():
     stock_data = prerpocess(stock_data)
 
     print(stock_data)
+    print(*STATES, sep='\n')
 
 
 
