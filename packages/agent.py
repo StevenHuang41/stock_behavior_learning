@@ -52,7 +52,7 @@ class RLAgent:
         if pre_portfolio == 'empty':
             if action == 'buy':
                 if r > 0:
-                    r *= 10
+                    r *= 20
                 
             elif action == 'sell':
                 r = -1
@@ -248,12 +248,14 @@ class RLAgent:
             action = self.choose_action(self.action_policy, state, evaluate=True)
 
         ## plot fig
-        plt.figure(constrained_layout=True)
-        plt.plot(values_tra, label="holding", alpha=0.3, linestyle='--')
-        plt.plot(values_learning, label=f"{self.policy} {self.action_policy}")
-        plt.xlabel('Holding Days')
-        plt.ylabel('Portfolio value')
-        plt.title(f"{self.stock_no}")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        fig.subplots_adjust(right=0.55)
+
+        ax.plot(values_tra, label="holding", alpha=0.3, linestyle='--')
+        ax.plot(values_learning, label=f"{self.policy} {self.action_policy}")
+        ax.set_xlabel('Holding Days')
+        ax.set_ylabel('Portfolio value')
+        ax.set_title(f"{self.stock_no}")
 
         apc = 100 * (values_learning[-1] - initial_cash) / initial_cash
         hpc = 100 * (values_tra[-1] - initial_cash) / initial_cash
@@ -265,7 +267,7 @@ class RLAgent:
 
         text_diff = 3000 if cpc >= 0 else -3000
 
-        plt.annotate(
+        ax.annotate(
             f"Agent: {values_learning[-1]:.0f}",
             xy=(len(values_learning), values_learning[-1]),
             xytext=(len(values_learning) + 500, values_learning[-1] + text_diff),
@@ -279,7 +281,7 @@ class RLAgent:
             }
         )
 
-        plt.annotate(
+        ax.annotate(
             f"Holding: {values_tra[-1]:.0f}",
             xy=(len(values_tra), values_tra[-1]),
             xytext=(len(values_tra) + 500, values_tra[-1] - text_diff),
@@ -293,20 +295,25 @@ class RLAgent:
             }
         )
 
-        plt.figtext(1.2, 0.8, 'Cash Percentage Change', fontsize=12)
-        plt.figtext(1.25, 0.75, f'agent growth:    {apc:^+9.2f} %', fontsize=12, color=apc_c)
-        plt.figtext(1.25, 0.7,  f'holding growth:  {hpc:^+9.2f} %', fontsize=12, color=hpc_c)
-        plt.figtext(1.25, 0.65, f'relative change: {cpc:^+9.2f} %', fontsize=12, color=cpc_c)
-        plt.legend()
+        fig.text(0.74, 0.8,
+                 'Cash Percentage Change', fontsize=12)
+        fig.text(0.75, 0.75,
+                 f'agent growth:    {apc:^+9.2f} %', fontsize=12, color=apc_c)
+        fig.text(0.75, 0.71,
+                 f'holding growth:  {hpc:^+9.2f} %', fontsize=12, color=hpc_c)
+        fig.text(0.75, 0.67,
+                 f'relative change: {cpc:^+9.2f} %', fontsize=12, color=cpc_c)
+        ax.legend()
 
         ## save fig
         images_dir = os.path.join(os.getcwd(), 'images')
         os.makedirs(images_dir, exist_ok=True)
         fig_fname = f'{self.policy}_{self.action_policy}.png'
-        plt.savefig(os.path.join(images_dir, fig_fname), bbox_inches='tight')
+        fig.savefig(os.path.join(images_dir, fig_fname), bbox_inches='tight')
+
+        fig.patch.set_linewidth(2)
 
         ## show fig
-        plt.tight_layout()
         plt.show()
 
         print(f"\nFinal value traditional strategy:\n"
