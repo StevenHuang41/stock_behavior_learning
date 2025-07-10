@@ -317,7 +317,7 @@ class RLAgent:
         plt.show()
 
         original_stdout = sys.stdout
-        os.makedirs('documents', mode=755, exist_ok=True)
+        os.makedirs('documents', mode=0o755, exist_ok=True)
         with open(f'documents/{self.policy}_{self.action_policy}.txt', 'w') as f:
             sys.stdout = f
             print(f"Final value traditional strategy:\n"
@@ -333,9 +333,9 @@ class RLAgent:
 
         
 
-    def show_q_table(self):
+    def store_q_table(self):
         original_stdout = sys.stdout
-        os.makedirs('documents', mode=755, exist_ok=True)
+        os.makedirs('documents', mode=0o755, exist_ok=True)
         with open(f'documents/{self.policy}_{self.action_policy}.txt', 'a') as f:
             sys.stdout = f
             print(f'{'States':<45}|{'Best Action':<15}| q values')
@@ -370,5 +370,4 @@ if __name__ == "__main__":
 
     q_epsilon_agent.train(stock_data)
     q_epsilon_agent.evaluate_learning(stock_data)
-
-    q_epsilon_agent.show_q_table()
+    q_epsilon_agent.store_q_table()

@@ -7,6 +7,7 @@ import yfinance as yf
 import itertools
 
 from packages.preprocess import prerpocess
+from packages.agent import RLAgent
 # note: 2025/6/6-9 stock split
 
 # states
@@ -48,7 +49,15 @@ def main():
 
     # pd.set_option('display.max_rows', None)
 
-    print(stock_data)
+    # agent 1: q learning, epsilon greedy
+    q_epsilon_agent = RLAgent(
+        policy='q_learning',
+        action_policy='epsilon_greedy',
+        gamma=0.9,
+    )
+    q_epsilon_agent.train(stock_data)
+    q_epsilon_agent.evaluate_learning(stock_data)
+    q_epsilon_agent.store_q_table()
 
 
 if __name__ == "__main__":
