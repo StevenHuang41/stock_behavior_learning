@@ -49,15 +49,57 @@ def main():
 
     # pd.set_option('display.max_rows', None)
 
-    # agent 1: q learning, epsilon greedy
-    q_epsilon_agent = RLAgent(
-        policy='q_learning',
-        action_policy='epsilon_greedy',
-        gamma=0.9,
-    )
-    q_epsilon_agent.train(stock_data)
-    q_epsilon_agent.evaluate_learning(stock_data)
-    q_epsilon_agent.store_q_table()
+    # # agent 1: q learning, epsilon greedy
+    # q_epsilon_agent = RLAgent(
+    #     policy='q_learning',
+    #     action_policy='epsilon_greedy',
+    #     alpha=0.001, gamma=0.9,
+    # )
+    # q_epsilon_agent.train(stock_data)
+
+    # # agent 2: q learning, softmax method
+    # q_soft_agent = RLAgent(
+    #     policy='q_learning',
+    #     action_policy='softmax_method',
+    #     alpha=0.1, gamma=0.9,
+    # )
+    # q_soft_agent.train(stock_data)
+
+    # agent 3: sarsa, epsilon greed 
+    # s_epsilon_agent = RLAgent(
+    #     policy='sarsa',
+    #     action_policy='epsilon_greedy',
+    #     alpha=0.001, gamma=0.9,
+    # )
+    # s_epsilon_agent.train(stock_data)
+
+    # agent 4: sarsa, softmax method
+    # s_soft_agent = RLAgent(
+    #     policy='sarsa',
+    #     action_policy='softmax_method',
+    #     alpha=0.001, gamma=0.9,
+    # )
+    # s_soft_agent.train(stock_data)
+
+
+
+    # # agent 1
+    # q_epsilon_agent.evaluate_learning(stock_data)
+    # q_epsilon_agent.store_q_table()
+
+    # # agent 2
+    # q_soft_agent.evaluate_learning(stock_data)
+    # q_soft_agent.store_q_table()
+
+    # # agent 3
+    # s_epsilon_agent.evaluate_learning(stock_data)
+    # s_epsilon_agent.store_q_table()
+
+    # # agent 4
+    # s_soft_agent.evaluate_learning(stock_data)
+    # s_soft_agent.store_q_table()
+
+
 
 
 if __name__ == "__main__":

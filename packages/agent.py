@@ -54,7 +54,7 @@ class RLAgent:
             if action == 'buy':
                 r = (price - previous_price) / previous_price
                 if r > 0:
-                    r *= 2
+                    r *= 1.2
                 
             elif action == 'sell':
                 r = -1
@@ -71,6 +71,7 @@ class RLAgent:
                 r = (price - previous_price) / previous_price
                 if buy_price > 0:
                     r += (price - buy_price) / buy_price
+                    
 
         return r
 
@@ -90,7 +91,9 @@ class RLAgent:
             tau = self.tau if evaluate is False else 0.001
 
             q_values = np.fromiter(self.Q_table[state].values(), dtype=np.float64)
-            exp_q_values = np.exp(q_values / tau)
+            q_values_div_tau = q_values / tau
+            q_values_div_tau = q_values_div_tau - np.max(q_values_div_tau) # for stability
+            exp_q_values = np.exp(q_values_div_tau)
             probs_actions = exp_q_values / np.sum(exp_q_values)
             
             return np.random.choice(self.ACTIONS, p=probs_actions)
@@ -253,6 +256,7 @@ class RLAgent:
 
         ax.plot(values_tra, label="holding", alpha=0.3, linestyle='--')
         ax.plot(values_learning, label=f"{self.policy} {self.action_policy}")
+        ax.plot([], [], ' ', label=f'alpha={self.alpha}\ngamma={self.gamma}')
         ax.set_xlabel('Holding Days')
         ax.set_ylabel('Portfolio value')
         ax.set_title(f"{self.stock_no}")
@@ -311,7 +315,7 @@ class RLAgent:
         fig_fname = f'{self.policy}_{self.action_policy}.png'
         fig.savefig(os.path.join(images_dir, fig_fname), bbox_inches='tight')
 
-        fig.patch.set_linewidth(2)
+        # fig.patch.set_linewidth(2)
 
         ## show fig
         plt.show()
