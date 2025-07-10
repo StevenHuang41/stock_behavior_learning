@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import itertools
 from typing import Literal
 import os
+import sys
 from tqdm import tqdm
 
 class RLAgent:
@@ -47,12 +48,13 @@ class RLAgent:
         price, previous_price, buy_price,
         pre_portfolio, action
     ) -> float:
-     
-        r = (price - previous_price) / previous_price
+
+        r = 0
         if pre_portfolio == 'empty':
             if action == 'buy':
+                r = (price - previous_price) / previous_price
                 if r > 0:
-                    r *= 20
+                    r *= 2
                 
             elif action == 'sell':
                 r = -1
@@ -64,13 +66,11 @@ class RLAgent:
                 r = -1
             elif action == 'sell':
                 if buy_price > 0:
-                    r += (price - buy_price) / buy_price
-                else : # buy_price == 0
-                    r = 0
+                    r = (price - buy_price) / buy_price
             else : # action == 'hold'
+                r = (price - previous_price) / previous_price
                 if buy_price > 0:
                     r += (price - buy_price) / buy_price
-
 
         return r
 
@@ -123,7 +123,7 @@ class RLAgent:
         close_prices = df.iloc[:, 1].to_numpy()
         feature_cols = df.iloc[:, 2:].to_numpy()
 
-        pbar = tqdm(range(self.episodes))
+        pbar = tqdm(range(self.episodes), ncols=100)
         for episode in pbar:
             pbar.set_description(f"Episode: {episode + 1}")
 
@@ -140,7 +140,11 @@ class RLAgent:
                 previous_price = close_prices[i - 1]
                 price = open_prices[i]
 
-                pre_portfolio = portfolio
+                ## calculate reward
+                reward = self.get_reward(
+                    price, previous_price, buy_price, portfolio, action
+                )
+                
                 ## execute action
                 if action == 'buy' and portfolio == 'empty':
                     buy_price = price
@@ -149,10 +153,6 @@ class RLAgent:
                     buy_price = 0
                     portfolio = 'empty'
 
-                ## calculate reward
-                reward = self.get_reward(
-                    price, previous_price, buy_price, pre_portfolio, action
-                )
 
                 ## get new state
                 next_state = (*feature_cols[i], portfolio)
@@ -178,7 +178,7 @@ class RLAgent:
             price = open_prices[-1]
 
             reward = self.get_reward(price, previous_price, buy_price,
-                                     pre_portfolio, action)
+                                     portfolio, action)
             
             self.update_Q_table(state, action, reward, done=True)
 
@@ -316,26 +316,40 @@ class RLAgent:
         ## show fig
         plt.show()
 
-        print(f"\nFinal value traditional strategy:\n"
-              f"    cash={cash_tra}\n"
-              f"    shares={shares_tra * close_prices[-1]}\n"
-              f"    Value={values_tra[-1]}")
+        original_stdout = sys.stdout
+        os.makedirs('documents', mode=755, exist_ok=True)
+        with open(f'documents/{self.policy}_{self.action_policy}.txt', 'w') as f:
+            sys.stdout = f
+            print(f"Final value traditional strategy:\n"
+                  f"    cash={cash_tra}\n"
+                  f"    shares={shares_tra * close_prices[-1]}\n"
+                  f"    Value={values_tra[-1]}")
 
-        print(f"\nFinal value {self.policy}:\n"
-              f"    cash={cash}\n"
-              f"    shares={shares * close_prices[-1]}\n"
-              f"    Value={values_learning[-1]}\n")
+            print(f"\nFinal value {self.policy}:\n"
+                  f"    cash={cash}\n"
+                  f"    shares={shares * close_prices[-1]}\n"
+                  f"    Value={values_learning[-1]}\n")
+            sys.stdout = original_stdout
+
+        
 
     def show_q_table(self):
-        print(f'{'States':<45}|{'Best Action':<15}| q values')
-        print('-' * 110)
-        for k in self.Q_table.keys():
-            best_action = max(self.Q_table[k], key=self.Q_table[k].get)
-            print(f"{str(k):<45}|{best_action:<15}| ", end='')
-            for i, v in self.Q_table[k].items():
-                print(f"{i:<4}: {v:+.4f}", end='    ')
+        original_stdout = sys.stdout
+        os.makedirs('documents', mode=755, exist_ok=True)
+        with open(f'documents/{self.policy}_{self.action_policy}.txt', 'a') as f:
+            sys.stdout = f
+            print(f'{'States':<45}|{'Best Action':<15}| q values')
+            print('-' * 110)
+            for k in self.Q_table.keys():
+                best_action = max(self.Q_table[k], key=self.Q_table[k].get)
+                print(f"{str(k):<45}|{best_action:<15}| ", end='')
+                for i, v in self.Q_table[k].items():
+                    print(f"{i:<4}: {v:+.4f}", end='    ')
 
-            print()
+                print()
+        
+            sys.stdout = original_stdout
+
 
 if __name__ == "__main__":
     from preprocess import prerpocess
