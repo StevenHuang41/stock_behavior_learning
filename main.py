@@ -6,8 +6,13 @@ import matplotlib as plt
 import yfinance as yf
 import itertools
 
+from skopt import gp_minimize
+from skopt.space import Real
+from skopt.utils import use_named_args
+
 from packages.preprocess import prerpocess
 from packages.agent import RLAgent
+
 # note: 2025/6/6-9 stock split
 
 # states
@@ -48,6 +53,28 @@ def main():
                             split_ratio=split_ratio)
 
     # pd.set_option('display.max_rows', None)
+
+    ## TODO use skopt to tune parameters
+    # search_space = [
+    #     Real(0.0001, 1.0, name='alpha'),
+    #     Real(0.8, 0.99, name='gamma')
+    # ]
+    # @use_named_args(search_space)
+    # def tuning_agent(alpha, gamma):
+    #     q_epsilon_agent = RLAgent(
+    #         policy='q_learning',
+    #         action_policy='epsilon_greedy',
+    #         alpha=alpha, gamma=gamma,
+    #     )
+    #     q_epsilon_agent.train(stock_data)
+    #     score = q_epsilon_agent.evaluate_learning(stock_data)
+    #     return -score # look for minimum value result
+    # result = gp_minimize(
+    #     func=tuning_agent,
+    #     dimensions=search_space,
+    #     n_calls=30,
+    # )
+    # print(result.x)
 
     # # agent 1: q learning, epsilon greedy
     # q_epsilon_agent = RLAgent(
@@ -98,6 +125,7 @@ def main():
     # # agent 4
     # s_soft_agent.evaluate_learning(stock_data)
     # s_soft_agent.store_q_table()
+
 
 
 

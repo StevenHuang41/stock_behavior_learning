@@ -200,7 +200,7 @@ class RLAgent:
                             if self.tau > self.tau_min \
                             else self.tau_min
             
-    def evaluate_learning(self, df: pd.DataFrame, initial_cash=10000):
+    def evaluate_learning(self, df: pd.DataFrame, initial_cash=10000) -> float:
         ## Initial status
         # traditional strategy
         cash_tra = initial_cash
@@ -315,8 +315,6 @@ class RLAgent:
         fig_fname = f'{self.policy}_{self.action_policy}.png'
         fig.savefig(os.path.join(images_dir, fig_fname), bbox_inches='tight')
 
-        # fig.patch.set_linewidth(2)
-
         ## show fig
         plt.show()
 
@@ -334,6 +332,8 @@ class RLAgent:
                   f"    shares={shares * close_prices[-1]}\n"
                   f"    Value={values_learning[-1]}\n")
             sys.stdout = original_stdout
+
+        return values_learning[-1]
 
         
 
