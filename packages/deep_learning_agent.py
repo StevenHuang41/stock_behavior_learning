@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -65,6 +66,7 @@ class EpsilonGreedy(ActionPolicy):
         self.epsilon = epsilon
         self.eps_dec = eps_dec
         self.eps_min = eps_min
+        super().__init__()
 
     def choose_action(self, q_values, evaluate=False):
         epsilon = self.epsilon if not evaluate else 0
@@ -93,7 +95,9 @@ class SoftmaxMethod(ActionPolicy):
     def choose_action(self, q_values, evaluate=False):
         tau = self.tau if not evaluate else 1e-2
 
-        exp_q_values = np.exp(q_values / tau)
+        q_values_div_tau = q_values / tau
+        q_values_div_tau = q_values_div_tau - np.max(q_values_div_tau)
+        exp_q_values = np.exp(q_values_div_tau)
         prob_q_values = exp_q_values / np.sum(exp_q_values)
 
         return np.random.choice(prob_q_values.shape[0], p=prob_q_values)
@@ -322,7 +326,7 @@ class DRLAgent:
     def _update_action(self, next_state, next_action):
         raise NotImplementedError
     
-    def evaluate_Dlearning(self, df: pd.DataFrame, initial_cash=10000):
+    def evaluate_learning(self, df: pd.DataFrame, initial_cash=10000):
         ## Initial status
         # traditional strategy
         cash_tra = initial_cash
@@ -345,36 +349,44 @@ class DRLAgent:
         values_tra.append(cash_tra + shares_tra * close_prices[0])
 
         # agent check day0 status to choose actions
-        state = (*feature_cols[0], portfolio)
-        action = self.choose_action(self.action_policy, state, evaluate=True)
+        state = np.append(feature_cols[0], portfolio)
+        q_values = self.q_network.predict_on_batch(state.reshape(1, -1))
+        action = self.action_policy.choose_action(q_values[0], evaluate=True)
         values_learning.append(initial_cash) # did not do anything at the first day
 
-        while index < len(df):
-            price = close_prices[index]
-
-            # set state & action
-            state = np.append(feature_cols[index], portfolio)
-            q_values = self.q_network.predict_on_batch(state.reshape(1, -1))
-            action = self.action_policy.choose_action(q_values[0], evaluate=True)
+        for i in range(1, len(df)):
+            opening_p = open_prices[i]
+            closing_p = close_prices[i]
 
             # execute action
-            if action == 0 and portfolio == 0:
-                # buy when empty
-                shares = cash // price
-                cash -= shares * price
+            if action == 0 and portfolio == 0: # buy when empty
+                shares = cash // opening_p
+                cash -= shares * opening_p
                 portfolio = 1
-            elif action == 1 and portfolio == 1:
-                # sell when holding
-                cash += shares * price
+            elif action == 1 and portfolio == 1: # sell when holding
+                cash += shares * opening_p
                 shares = 0
                 portfolio = 0
 
-            values_tra.append(cash_tra + shares_tra * df.values[index, 0])
-            values_learning.append(cash + shares * df.values[index, 0])
+            values_tra.append(cash_tra + shares_tra * closing_p)
+            values_learning.append(cash + shares * closing_p)
 
-            index += 1
+            # set state & action
+            state = np.append(feature_cols[i], portfolio)
+            q_values = self.q_network.predict_on_batch(state.reshape(1, -1))
+            action = self.action_policy.choose_action(q_values[0], evaluate=True)
 
         ## plot fig
+        fig, ax = plt.subplots(figsize=(10, 6))
+        fig.subplots_adjust(right=0.55)
+        
+        ax.plot(values_tra, label='traditional', alpha=0.3, linestyle='--')
+        ax.plot(values_learning, label=f"{self.policy} {self.apn}")
+        ax.plot([], [], ' ', label=f'alpha={self.alpha}\ngamma={self.gamma}')
+        ax.set_xlabel('Holding Days')
+        ax.set_ylabel('Portfolio Value')
+        ax.set_title(f'{self.stock_no}')
+
         apc = 100 * (values_learning[-1] - initial_cash) / initial_cash
         hpc = 100 * (values_tra[-1] - initial_cash) / initial_cash
         cpc = 100 * (values_learning[-1] - values_tra[-1]) / values_tra[-1]
@@ -385,102 +397,139 @@ class DRLAgent:
 
         text_diff = 3000 if cpc >= 0 else -3000
 
-        plt.plot(values_tra, label="holding", alpha=0.3, linestyle='--')
-        plt.plot(values_learning, label=f"{self.policy} {self.apn}")
-        plt.annotate(f"Agent: {values_learning[-1]:.0f}",
-                     xy=(len(values_learning), values_learning[-1]),
-                     xytext=(len(values_learning) + 500, values_learning[-1] + text_diff),
-                     fontsize=12,
-                     ha='left',
-                     va='center',
-                     arrowprops={
-                         'arrowstyle': "->",
-                         'color': 'orange',
-                         'alpha': 0.5,
-                     })
-        plt.annotate(f"Holding: {values_tra[-1]:.0f}",
-                     xy=(len(values_tra), values_tra[-1]),
-                     xytext=(len(values_tra) + 500, values_tra[-1] - text_diff),
-                     fontsize=12,
-                     ha='left',
-                     va='center',
-                     arrowprops={
-                         'arrowstyle': "->",
-                         'color': 'blue',
-                         'alpha': 0.3,
-                     })
-        plt.xlabel('Holding Days')
-        plt.ylabel('Portfolio value')
-        plt.title(f"{self.stock_no}")
-        plt.figtext(1.2, 0.8, 'Cash Percentage Change', fontsize=12)
-        plt.figtext(1.25, 0.75, f'agent growth:    {apc:^+9.2f} %', fontsize=12, color=apc_c)
-        plt.figtext(1.25, 0.7,  f'holding growth:  {hpc:^+9.2f} %', fontsize=12, color=hpc_c)
-        plt.figtext(1.25, 0.65, f'relative change: {cpc:^+9.2f} %', fontsize=12, color=cpc_c)
-        plt.legend()
+        ax.annotate(
+            f"Agent: {values_learning[-1]:.0f}",
+            xy=(len(values_learning), values_learning[-1]),
+            xytext=(len(values_learning) + 500, values_learning[-1] + text_diff),
+            fontsize=12,
+            ha='left',
+            va='center',
+            arrowprops={
+                'arrowstyle': "->",
+                'color': 'orange',
+                'alpha': 0.5,
+            }
+        )
+        ax.annotate(
+            f"Holding: {values_tra[-1]:.0f}",
+            xy=(len(values_tra), values_tra[-1]),
+            xytext=(len(values_tra) + 500, values_tra[-1] - text_diff),
+            fontsize=12,
+            ha='left',
+            va='center',
+            arrowprops={
+                'arrowstyle': "->",
+                'color': 'blue',
+                'alpha': 0.3,
+            }
+        )
+
+        fig.text(0.74, 0.8,
+                 'Cash Percentage Change', fontsize=12)
+        fig.text(0.75, 0.75,
+                    f'agent growth:    {apc:^+9.2f} %', fontsize=12, color=apc_c)
+        fig.text(0.75, 0.71,
+                    f'holding growth:  {hpc:^+9.2f} %', fontsize=12, color=hpc_c)
+        fig.text(0.75, 0.67,
+                    f'relative change: {cpc:^+9.2f} %', fontsize=12, color=cpc_c)
+        ax.legend()
 
         ## save fig
         images_dir = os.path.join(os.getcwd(), 'images')
         os.makedirs(images_dir, exist_ok=True)
         fig_fname = f'{self.policy}_{self.apn}.png'
-        plt.savefig(os.path.join(images_dir, fig_fname), bbox_inches='tight')
+        fig.savefig(os.path.join(images_dir, fig_fname), bbox_inches='tight')
 
         ## show fig
         plt.show()
 
-        print(f"Final value holding:\n \
-                cash={cash_tra}\n \
-                shares={shares_tra * df.values[-1, 0]}\n \
-                Value={values_tra[-1]}")
-        print(f"Final value {self.policy}:\n \
-                cash={cash}\n \
-                shares={shares * df.values[-1, 0]}\n \
-                Value={values_learning[-1]}")
+        original_stdout = sys.stdout
+        os.makedirs('documents', mode=0o755, exist_ok=True)
+        with open(f'documents/{self.policy}_{self.action_policy}.txt', 'w') as f:
+            sys.stdout = f
+            print(f"Final value holding:\n"
+                  f"    cash={cash_tra}\n"
+                  f"    shares={shares_tra * close_prices[-1]}\n"
+                  f"    Value={values_tra[-1]}")
+
+            print(f"Final value {self.policy}:\n"
+                  f"    cash={cash}\n"
+                  f"    shares={shares * close_prices[-1]}\n"
+                  f"    Value={values_learning[-1]}")
+            sys.stdout = original_stdout
+
+        return values_learning[-1]
 
     def show_performance(self):
+        test_data = np.array(self.STATES)
+
+        encoded_data = np.column_stack([
+            (test_data[:, 0] == 'up').astype(int),
+            (test_data[:, 0] == 'down').astype(int),
+            (test_data[:, 0] == 'stable').astype(int),
+            (test_data[:, 0] == 'up').astype(int),
+            (test_data[:, 0] == 'down').astype(int),
+            (test_data[:, 0] == 'stable').astype(int),
+            (test_data[:, 0] == 'high').astype(int),
+            (test_data[:, 0] == 'low').astype(int),
+            (test_data[:, 0] == 'normal').astype(int),
+            (test_data[:, 0] == 'holding').astype(int),
+        ])        
+        
         test_q_values = self.q_network.predict_on_batch(encoded_data)
 
         test_actions = np.argmax(test_q_values, axis=1)
-        condiitons = [
+        conditions = [
             test_actions == 0,
             test_actions == 1,
             test_actions == 2,
         ]
         choices = ['buy', 'sell', 'hold']
-        test_actions = np.select(condiitons, choices)
-        for i, v in enumerate(test_D_data):
-            print(f"{str(v):<29}-> {test_actions[i]}\t", end='')
-            for j, n in enumerate(self.ACTIONS):
-                if j != len(self.ACTIONS) - 1:
-                    print(f"{n}:{test_q_values[i, j]:>+8.4f}", end='\t')
-                else :
-                    print(f"{n}:{test_q_values[i, j]:>+8.4f}")
+        test_actions = np.select(conditions, choices)
 
-        self.evaluate_Dlearning(pre_stock_data)
+        original_stdout = sys.stdout
+        os.makedirs('documents', mode=0o755, exist_ok=True)
+        with open(f'documents/{self.policy}_{self.action_policy}.txt', 'a') as f:
+            sys.stdout = f
+            print(f'{'State':<45}|{'Best Action':<15}| q values')
+            print('-' * 110)
+            for i, v in enumerate(test_data):
+                print(f"{str(v):<45}|{test_actions[i]:<15}| ", end='')
+                for j, n in enumerate(self.ACTIONS):
+                    print(f"{n}:{test_q_values[i, j]:>+8.4f}", end='    ')
+
+                print()
+
+            sys.stdout = original_stdout
 
 
 class DQNAgent(DRLAgent):
-    def __init__(self, action_policy,
-                 state_size, action_size,
-                 alpha=0.001, gamma=0.9,
-                 episodes=1000,
-                 batch_size_=32, *, apn):
-        super().__init__(action_policy,
-                         state_size, action_size,
-                         alpha, gamma,
-                         episodes,
-                         batch_size_)
+    def __init__(
+        self, action_policy,
+        state_size, action_size,
+        alpha=0.001, gamma=0.9,
+        episodes=1000,
+        batch_size_=32,
+        *,
+        apn
+    ):
+        super().__init__(
+            action_policy,
+            '0050.TW', 2,
+            state_size, action_size,
+            alpha, gamma,
+            episodes,
+            batch_size_
+        )
         self.policy = 'DQN'
         self.apn = apn
 
-    # return (32, 1) array
     def _get_max_next_q_values(self, next_q_values, next_actions):
         return np.max(next_q_values, axis=1)
 
-    # return index of action
     def _get_policy_next_action(self, next_state):
         return -1
 
-    # return index of action
     def _update_action(self, next_state, next_action):
         q_values = self.q_network.predict_on_batch(next_state)
         return self.action_policy.choose_action(q_values[0])
@@ -499,16 +548,13 @@ class DsarsaAgent(DRLAgent):
         self.policy = 'Dsarsa'
         self.apn = apn
 
-    # return (32, 1) array
     def _get_max_next_q_values(self, next_q_values, next_actions):
         return next_q_values[np.arange(self.batch_size), next_actions]
 
-    # return index of action
     def _get_policy_next_action(self, next_state):
         next_q_values = self.q_network.predict_on_batch(next_state)
         return self.action_policy.choose_action(next_q_values[0])
 
-    # return index of action
     def _update_action(self, next_state, next_action) -> int:
         return next_action
 
@@ -524,3 +570,15 @@ if __name__ == "__main__":
                             split_date='2025-06-06',
                             split_ratio=4)
     stock_data = deep_agent_preprocess(stock_data)
+
+    dqn_eps_agent = DQNAgent(
+        action_policy=EpsilonGreedy(),
+        state_size=10,
+        action_size=3,
+        episodes=1,
+        apn='epsilon_greedy'
+    )
+    dqn_eps_agent.initialize()
+    dqn_eps_agent.train(stock_data)
+    dqn_eps_agent.evaluate_learning(stock_data)
+    dqn_eps_agent.show_performance()
