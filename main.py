@@ -10,7 +10,7 @@ from skopt import gp_minimize
 from skopt.space import Real
 from skopt.utils import use_named_args
 
-from packages.preprocess import prerpocess
+from packages.preprocess import prerpocess, deep_agent_preprocess
 from packages.agent import RLAgent
 
 # note: 2025/6/6-9 stock split
@@ -52,7 +52,8 @@ def main():
                             split_date=split_date,
                             split_ratio=split_ratio)
 
-    # pd.set_option('display.max_rows', None)
+    stock_data = deep_agent_preprocess(stock_data)
+
 
     ## TODO use skopt to tune parameters
     # search_space = [
@@ -110,6 +111,8 @@ def main():
 
 
 
+
+#####################################################################################
     # # agent 1
     # q_epsilon_agent.evaluate_learning(stock_data)
     # q_epsilon_agent.store_q_table()
@@ -131,4 +134,8 @@ def main():
 
 
 if __name__ == "__main__":
+
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.width', None)
+
     main()

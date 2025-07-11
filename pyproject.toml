@@ -5,11 +5,20 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "ipykernel>=6.29.5",
     "matplotlib>=3.10.3",
-    "numpy>=2.3.1",
+    "numpy>=1.26.0,<2.2.0",
+    "pip>=25.1.1",
     "scikit-learn>=1.7.0",
     "scikit-optimize>=0.10.2",
     "tdqm>=0.0.1",
+    "tensorflow>=2.19.0",
     "tqdm>=4.67.1",
     "yfinance>=0.2.65",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+    "pip>=25.1.1",
 ]

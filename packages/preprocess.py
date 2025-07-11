@@ -2,6 +2,13 @@ import numpy as np
 import pandas as pd
 from typing import Optional, Literal
 
+from sklearn.preprocessing import OneHotEncoder
+
+# from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn import set_config
+
+set_config(transform_output='pandas')
 
 def stock_split_event(
     df: pd.DataFrame,
@@ -10,6 +17,27 @@ def stock_split_event(
 ) -> pd.DataFrame:
     df.loc[df.index > date, ['Open', 'Close']] *= ratio
     return df
+
+def deep_agent_preprocess(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+
+    exclude_cols = ['Open', 'Close']
+    encode_cols = [col for col in df.columns if col not in exclude_cols]
+    encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+
+    preprocessor = ColumnTransformer(
+        transformers=[('onehot_pipe', encoder, encode_cols)],
+        remainder='passthrough',
+        verbose_feature_names_out=False,
+    )
+
+    df_ = preprocessor.fit_transform(df)
+    cols_astype = [col for col in df_.columns if col not in exclude_cols]
+    df_[cols_astype] = df_[cols_astype].astype(int)
+    df_ = df_[exclude_cols + cols_astype]
+    
+    return df_
+
 
 def prerpocess(
     df: pd.DataFrame,
@@ -88,6 +116,11 @@ if __name__ == "__main__":
                             hasStockSplited=True,
                             split_date='2025-06-06',
                             split_ratio=4)
+
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+
+    stock_data = deep_agent_preprocess(stock_data)
 
 
     print(stock_data)

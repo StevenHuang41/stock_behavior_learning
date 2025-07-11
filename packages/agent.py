@@ -156,7 +156,6 @@ class RLAgent:
                     buy_price = 0
                     portfolio = 'empty'
 
-
                 ## get new state
                 next_state = (*feature_cols[i], portfolio)
 
