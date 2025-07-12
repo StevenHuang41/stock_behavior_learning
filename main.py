@@ -12,6 +12,8 @@ from skopt.utils import use_named_args
 
 from packages.preprocess import prerpocess, deep_agent_preprocess
 from packages.agent import RLAgent
+from packages.deep_learning_agent import DQNAgent, DsarsaAgent
+from packages.deep_learning_agent import EpsilonGreedy, SoftmaxMethod
 
 # note: 2025/6/6-9 stock split
 
@@ -51,8 +53,6 @@ def main():
                             hasStockSplited=splited,
                             split_date=split_date,
                             split_ratio=split_ratio)
-
-    stock_data = deep_agent_preprocess(stock_data)
 
 
     ## TODO use skopt to tune parameters
@@ -108,6 +108,38 @@ def main():
     #     alpha=0.001, gamma=0.9,
     # )
     # s_soft_agent.train(stock_data)
+
+    stock_data = deep_agent_preprocess(stock_data)
+    # exclude Open and Close price, but add one for portfolio
+    state_size = len(stock_data.columns) - 2 + 1
+
+    # agent 5: Deep q learning, epsilon greedy
+    # dqn_eps_agent = DQNAgent(
+    #     action_policy=EpsilonGreedy(),
+    #     state_size=state_size,
+    #     action_size=len(ACTIONS),
+    #     alpha=0.001, gamma=0.1,
+    #     episodes=100,
+    #     apn='epsilon_greedy'
+    # )
+    # dqn_eps_agent.initialize()
+    # dqn_eps_agent.train(stock_data)
+    # dqn_eps_agent.evaluate_learning(stock_data)
+    # dqn_eps_agent.show_performance()
+
+    # agent 6: Deep q learning, softmax method
+    dqn_soft_agent = DQNAgent(
+        action_policy=SoftmaxMethod(),
+        state_size=state_size,
+        action_size=len(ACTIONS),
+        alpha=0.001, gamma=0.9,
+        episodes=100,
+        apn='softmax_method'
+    )
+    dqn_soft_agent.initialize()
+    dqn_soft_agent.train(stock_data)
+    dqn_soft_agent.evaluate_learning(stock_data)
+    dqn_soft_agent.show_performance()
 
 
 

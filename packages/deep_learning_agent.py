@@ -135,8 +135,8 @@ class DRLAgent:
         self.nL1 = self.action_size
         self.nL2 = None
 
-        self.replay_freq = 32
-        self.sync_freq = 100
+        self.replay_freq = 64
+        self.sync_freq = 300
 
         self.TRENDS = ['up', 'down', 'stable']
         self.VOLUME_STATUS = ['high', 'low', 'normal']
@@ -185,7 +185,6 @@ class DRLAgent:
         model.compile(
             optimizer=Adam(learning_rate=self.alpha),
             loss='mse',
-            # jit_compile=False,
         )
         return model
 
@@ -314,8 +313,6 @@ class DRLAgent:
             ## decay
             self.action_policy.decay()
 
-        # print("=" * 10, "Finishing Training", "=" * 10)
-        ## save weights
         self.q_network.save_weights(
             os.path.join(self.weight_dir, f'{self.policy}_{self.apn}.weights.h5')
         )
@@ -427,11 +424,11 @@ class DRLAgent:
         fig.text(0.74, 0.8,
                  'Cash Percentage Change', fontsize=12)
         fig.text(0.75, 0.75,
-                    f'agent growth:    {apc:^+9.2f} %', fontsize=12, color=apc_c)
+                 f'agent growth:    {apc:^+9.2f} %', fontsize=12, color=apc_c)
         fig.text(0.75, 0.71,
-                    f'holding growth:  {hpc:^+9.2f} %', fontsize=12, color=hpc_c)
+                 f'holding growth:  {hpc:^+9.2f} %', fontsize=12, color=hpc_c)
         fig.text(0.75, 0.67,
-                    f'relative change: {cpc:^+9.2f} %', fontsize=12, color=cpc_c)
+                 f'relative change: {cpc:^+9.2f} %', fontsize=12, color=cpc_c)
         ax.legend()
 
         ## save fig
@@ -445,17 +442,17 @@ class DRLAgent:
 
         original_stdout = sys.stdout
         os.makedirs('documents', mode=0o755, exist_ok=True)
-        with open(f'documents/{self.policy}_{self.action_policy}.txt', 'w') as f:
+        with open(f'documents/{self.policy}_{self.apn}.txt', 'w') as f:
             sys.stdout = f
             print(f"Final value holding:\n"
                   f"    cash={cash_tra}\n"
                   f"    shares={shares_tra * close_prices[-1]}\n"
                   f"    Value={values_tra[-1]}")
 
-            print(f"Final value {self.policy}:\n"
+            print(f"\nFinal value {self.policy}:\n"
                   f"    cash={cash}\n"
                   f"    shares={shares * close_prices[-1]}\n"
-                  f"    Value={values_learning[-1]}")
+                  f"    Value={values_learning[-1]}\n")
             sys.stdout = original_stdout
 
         return values_learning[-1]
@@ -464,16 +461,16 @@ class DRLAgent:
         test_data = np.array(self.STATES)
 
         encoded_data = np.column_stack([
-            (test_data[:, 0] == 'up').astype(int),
             (test_data[:, 0] == 'down').astype(int),
             (test_data[:, 0] == 'stable').astype(int),
             (test_data[:, 0] == 'up').astype(int),
-            (test_data[:, 0] == 'down').astype(int),
-            (test_data[:, 0] == 'stable').astype(int),
-            (test_data[:, 0] == 'high').astype(int),
-            (test_data[:, 0] == 'low').astype(int),
-            (test_data[:, 0] == 'normal').astype(int),
-            (test_data[:, 0] == 'holding').astype(int),
+            (test_data[:, 1] == 'down').astype(int),
+            (test_data[:, 1] == 'stable').astype(int),
+            (test_data[:, 1] == 'up').astype(int),
+            (test_data[:, 2] == 'high').astype(int),
+            (test_data[:, 2] == 'low').astype(int),
+            (test_data[:, 2] == 'normal').astype(int),
+            (test_data[:, 3] == 'holding').astype(int),
         ])        
         
         test_q_values = self.q_network.predict_on_batch(encoded_data)
@@ -485,16 +482,16 @@ class DRLAgent:
             test_actions == 2,
         ]
         choices = ['buy', 'sell', 'hold']
-        test_actions = np.select(conditions, choices)
+        test_actions = np.select(conditions, choices, default='hold')
 
         original_stdout = sys.stdout
         os.makedirs('documents', mode=0o755, exist_ok=True)
-        with open(f'documents/{self.policy}_{self.action_policy}.txt', 'a') as f:
+        with open(f'documents/{self.policy}_{self.apn}.txt', 'a') as f:
             sys.stdout = f
-            print(f'{'State':<45}|{'Best Action':<15}| q values')
+            print(f'{'State':<42}|{'Best Action':<15}| q values')
             print('-' * 110)
             for i, v in enumerate(test_data):
-                print(f"{str(v):<45}|{test_actions[i]:<15}| ", end='')
+                print(f"{str(v):<42}|{test_actions[i]:<15}| ", end='')
                 for j, n in enumerate(self.ACTIONS):
                     print(f"{n}:{test_q_values[i, j]:>+8.4f}", end='    ')
 
@@ -570,15 +567,16 @@ if __name__ == "__main__":
                             split_date='2025-06-06',
                             split_ratio=4)
     stock_data = deep_agent_preprocess(stock_data)
-
     dqn_eps_agent = DQNAgent(
         action_policy=EpsilonGreedy(),
         state_size=10,
         action_size=3,
-        episodes=1,
+        alpha=0.001, gamma=0.1,
+        episodes=10,
         apn='epsilon_greedy'
     )
     dqn_eps_agent.initialize()
+    # dqn_eps_agent.load_weight('model_weights/DQN_epsilon_greedy.weights.h5')
     dqn_eps_agent.train(stock_data)
     dqn_eps_agent.evaluate_learning(stock_data)
     dqn_eps_agent.show_performance()
