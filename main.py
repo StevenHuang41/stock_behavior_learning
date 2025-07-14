@@ -17,43 +17,48 @@ from packages.deep_learning_agent import EpsilonGreedy, SoftmaxMethod
 
 # note: 2025/6/6-9 stock split
 
-# states
-TRENDS = ['up', 'down', 'stable']
-VOLUME_STATUS = ['high', 'low', 'normal']
-PORTFOLIO_STATUS = ['empty', 'holding']
-STATES = list(itertools.product(*[TRENDS] * 2, VOLUME_STATUS, PORTFOLIO_STATUS))
 
-ACTIONS = ['buy', 'sell', 'hold']
+def show_usage():
+    print("Usage: python main.py [stock no]\n\n"
+          "    stock no: should be able to be found using yfinance\n")
 
 def main():
-
     # get stock number
-    if len(sys.argv) == 2:
-        stock_no = sys.argv[1]
+    if len(sys.argv) == 1:
+        stock_no = (input("Enter a Stock number:\n")).strip()
 
-    elif len(sys.argv) == 4:
-        splited = True
+    elif len(sys.argv) == 2:
+        if sys.argv[1] in ['-h', '--help']:
+            show_usage()
+            sys.exit(0)
+
         stock_no = (sys.argv[1]).strip()
-        split_date = (sys.argv[2]).strip()
-        split_ratio = float((sys.argv[3]).strip())
-    else :
-        stock_no = input("Enter a Stock number:\n")
-        splited = input(f"Has {stock_no} splited?\n")
-        splited = splited.strip().lower()
-        splited = True if 'y' in splited else False
-        if splited:
-            split_date = input("When did it split? ['YYYY-MM-DD']\n").strip()
-            split_ratio = float(input("What is the split ratio? (n-for-1)\n").strip())
 
-    # download stock data from yf
+    else :
+        show_usage()
+        sys.exit(1)
+
     stock_data = yf.download(stock_no, period="max", auto_adjust=True)
 
-    # do preprocessing
-    stock_data = prerpocess(stock_data,
-                            hasStockSplited=splited,
-                            split_date=split_date,
-                            split_ratio=split_ratio)
+    if stock_data.empty:
+        print(f'\nError: No data found for stock no: {stock_no}.',
+              'Please check the stock no.')
+        sys.exit(1)
 
+    # do preprocessing
+    avg_days = [5, 20] # set average of 5, 20 days preiods
+
+    # states
+    # TRENDS = ['up', 'down', 'stable']
+    # VOLUME_STATUS = ['high', 'low', 'normal']
+    # PORTFOLIO_STATUS = ['empty', 'holding']
+
+    ACTIONS = ['buy', 'sell', 'hold']
+    # STATES = list(itertools.product(*[TRENDS] * len(avg_days),
+                                    # VOLUME_STATUS,
+                                    # PORTFOLIO_STATUS))
+
+    stock_data = prerpocess(stock_no, stock_data, avg_days)
 
     ## TODO use skopt to tune parameters
     # search_space = [
@@ -81,7 +86,7 @@ def main():
     # q_epsilon_agent = RLAgent(
     #     policy='q_learning',
     #     action_policy='epsilon_greedy',
-    #     alpha=0.001, gamma=0.9,
+    #     alpha=0.15, gamma=0.7,
     # )
     # q_epsilon_agent.train(stock_data)
 
@@ -110,41 +115,53 @@ def main():
     # s_soft_agent.train(stock_data)
 
     stock_data = deep_agent_preprocess(stock_data)
-    # exclude Open and Close price, but add one for portfolio
-    state_size = len(stock_data.columns) - 2 + 1
 
-    # agent 5: Deep q learning, epsilon greedy
+    # # agent 5: Deep q learning, epsilon greedy
     # dqn_eps_agent = DQNAgent(
     #     action_policy=EpsilonGreedy(),
-    #     state_size=state_size,
-    #     action_size=len(ACTIONS),
-    #     alpha=0.001, gamma=0.1,
+    #     apn='epsilon_greedy',
+    #     alpha=0.001,
+    #     gamma=0.9,
     #     episodes=100,
-    #     apn='epsilon_greedy'
     # )
     # dqn_eps_agent.initialize()
     # dqn_eps_agent.train(stock_data)
-    # dqn_eps_agent.evaluate_learning(stock_data)
-    # dqn_eps_agent.show_performance()
 
-    # agent 6: Deep q learning, softmax method
-    dqn_soft_agent = DQNAgent(
-        action_policy=SoftmaxMethod(),
-        state_size=state_size,
-        action_size=len(ACTIONS),
-        alpha=0.001, gamma=0.9,
+    # # agent 6: Deep q learning, softmax method
+    # dqn_soft_agent = DQNAgent(
+    #     action_policy=SoftmaxMethod(),
+    #     apn='softmax_method',
+    #     alpha=0.001,
+    #     gamma=0.9,
+    #     episodes=100,
+    # )
+    # dqn_soft_agent.initialize()
+    # dqn_soft_agent.train(stock_data)
+
+    # agent 7: Deep sarsa learning, epsilon greedy
+    ds_eps_agent = DsarsaAgent(
+        action_policy=EpsilonGreedy(),
+        apn='epsilon_greedy',
+        alpha=0.001,
+        gamma=0.7,
         episodes=100,
-        apn='softmax_method'
     )
-    dqn_soft_agent.initialize()
-    dqn_soft_agent.train(stock_data)
-    dqn_soft_agent.evaluate_learning(stock_data)
-    dqn_soft_agent.show_performance()
+    ds_eps_agent.initialize()
+    ds_eps_agent.train(stock_data)
 
+    # agent 8: Deep sarsa learning, softmax method
+    ds_soft_agent = DsarsaAgent(
+        action_policy=SoftmaxMethod(),
+        apn='softmax_method',
+        alpha=0.001,
+        gamma=0.7,
+        episodes=100,
+    )
+    ds_soft_agent.initialize()
+    ds_soft_agent.train(stock_data)
 
+##########################################################################
 
-
-#####################################################################################
     # # agent 1
     # q_epsilon_agent.evaluate_learning(stock_data)
     # q_epsilon_agent.store_q_table()
@@ -161,7 +178,21 @@ def main():
     # s_soft_agent.evaluate_learning(stock_data)
     # s_soft_agent.store_q_table()
 
+    # # agent 5
+    # dqn_eps_agent.evaluate_learning(stock_data)
+    # dqn_eps_agent.show_performance()
 
+    # # agent 6
+    # dqn_soft_agent.evaluate_learning(stock_data)
+    # dqn_soft_agent.show_performance()
+
+    # agent 7
+    ds_eps_agent.evaluate_learning(stock_data)
+    ds_eps_agent.show_performance()
+
+    # agent 8
+    ds_soft_agent.evaluate_learning(stock_data)
+    ds_soft_agent.show_performance()
 
 
 

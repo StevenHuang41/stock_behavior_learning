@@ -43,40 +43,43 @@ class RLAgent:
 
         self.Q_table = {s: {a: 0 for a in self.ACTIONS} for s in self.STATES}
 
-    def get_reward(
+    def _get_reward(
         self,
         price, previous_price, buy_price,
         pre_portfolio, action
     ) -> float:
 
-        r = 0
+        r = (price - previous_price) / previous_price
         if pre_portfolio == 'empty':
             if action == 'buy':
-                r = (price - previous_price) / previous_price
-                if r > 0:
-                    r *= 1.2
-                
+                r = 0
+
             elif action == 'sell':
                 r = -1
+
             else : # action == 'hold'
                 r = -r
                 
         else : # pre_portfolio == 'holding'
             if action == 'buy':
                 r = -1
+
             elif action == 'sell':
                 if buy_price > 0:
-                    r = (price - buy_price) / buy_price
+                    r += (price - buy_price) / buy_price
+                else :
+                    r = 0
+
             else : # action == 'hold'
-                r = (price - previous_price) / previous_price
                 if buy_price > 0:
                     r += (price - buy_price) / buy_price
+                else :
+                    r = 0
                     
-
         return r
 
-    def choose_action(self, action_policy, state, *, evaluate=False) -> str:
-        if action_policy == 'epsilon_greedy':
+    def _choose_action(self, state, *, evaluate=False) -> str:
+        if self.action_policy == 'epsilon_greedy':
             # set epsilon
             epsilon = self.epsilon if evaluate == False else 0
 
@@ -99,8 +102,8 @@ class RLAgent:
             return np.random.choice(self.ACTIONS, p=probs_actions)
 
 
-    def update_Q_table(self, state, action, reward,
-                       next_state=None, next_action=None, done=False):
+    def _update_Q_table(self, state, action, reward,
+                       next_state, next_action, done=False):
         if self.policy == 'sarsa' and next_action is None and not done:
             raise ValueError("Must provide next action when using SARSA")
 
@@ -114,7 +117,7 @@ class RLAgent:
                                        key=self.Q_table[next_state].get)
 
             update_value = reward + \
-            self.gamma * self.Q_table[next_state][best_next_action] \
+            self.gamma * self.Q_table[next_state][best_next_action]
 
         self.Q_table[state][action] += self.alpha * (
             update_value - self.Q_table[state][action]
@@ -136,15 +139,15 @@ class RLAgent:
 
             # Initial state
             state = (*feature_cols[0], portfolio)
-            action = self.choose_action(self.action_policy, state)
+            action = self._choose_action(state)
 
             # go through the whole df rows
-            for i in range(1, len(df) - 1):
+            for i in range(1, len(df)):
                 previous_price = close_prices[i - 1]
                 price = open_prices[i]
 
                 ## calculate reward
-                reward = self.get_reward(
+                reward = self._get_reward(
                     price, previous_price, buy_price, portfolio, action
                 )
                 
@@ -160,31 +163,18 @@ class RLAgent:
                 next_state = (*feature_cols[i], portfolio)
 
                 ## set next action 
-                if self.policy == 'q_learning':
-                    next_action = None
-                else : # sarsa
-                    next_action = self.choose_action(self.action_policy, next_state)
+                next_action = self._choose_action(next_state)
+
+                done = False if i != len(df) - 1 else True
 
                 ## update Q table
-                self.update_Q_table(state, action, reward, next_state, next_action)
+                self._update_Q_table(state, action, reward,
+                                    next_state, next_action, done)
 
                 ## move to next state and action
                 state = next_state
-                if self.policy == 'sarsa':
-                    action = next_action
-                else : # q-learning
-                    action = self.choose_action(self.action_policy, state)
+                action = next_action
 
-            ## last record
-            previous_price = close_prices[-2]
-            price = open_prices[-1]
-
-            reward = self.get_reward(price, previous_price, buy_price,
-                                     portfolio, action)
-            
-            self.update_Q_table(state, action, reward, done=True)
-
-            ###
             ## version 1: fast drop at the beginning
             # self.epsilon = self.epsilon * (1 - self.eps_dec) \
             #     if self.epsilon > self.eps_min \
@@ -223,7 +213,7 @@ class RLAgent:
 
         # learning check for day1 state then choose action
         state = (*feature_cols[0], portfolio)
-        action = self.choose_action(self.action_policy, state, evaluate=True)
+        action = self._choose_action(state, evaluate=True)
         values_learning.append(initial_cash) # did not do anything at the first day
 
         for i in range(1, len(df)):
@@ -247,7 +237,7 @@ class RLAgent:
 
             # set next state
             state = (*feature_cols[i], portfolio)
-            action = self.choose_action(self.action_policy, state, evaluate=True)
+            action = self._choose_action(state, evaluate=True)
 
         ## plot fig
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -360,15 +350,12 @@ if __name__ == "__main__":
 
     stock_data = yf.download("0050.TW", period="max", auto_adjust=True)
 
-    stock_data = prerpocess(stock_data,
-                            hasStockSplited=True,
-                            split_date='2025-06-06',
-                            split_ratio=4)
+    stock_data = prerpocess("0050.TW", stock_data, [5, 20])
 
     q_epsilon_agent = RLAgent(
         policy='q_learning',
         action_policy='epsilon_greedy',
-        gamma=0.9,
+        alpha=0.1, gamma=0.95,
     )
 
     q_epsilon_agent.train(stock_data)

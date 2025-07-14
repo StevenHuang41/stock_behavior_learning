@@ -10,33 +10,34 @@ from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Input, Dense # type: ignore
 from tensorflow.keras.optimizers import Adam # type: ignore
 
+from typing import Optional
+
 from tqdm import tqdm
 
-from sklearn.preprocessing import OneHotEncoder
-
 class ReplayBuffer:
-    def __init__(self, input_size, max_size=5e3, *, batch_size=32):
-        self.max_size = int(max_size)
+    def __init__(self, input_size, max_size=int(3e3), *, batch_size=128):
+        self.max_size = max_size
         self.batch_size = batch_size   
         
-        state_dtype = np.dtype((np.int8, (input_size,)))
-        self.states = np.empty((self.max_size,), dtype=state_dtype)
+        self.states = np.empty((self.max_size, input_size), dtype=np.int8)
         self.actions = np.empty((self.max_size,), dtype=np.int8)
         self.rewards = np.empty((self.max_size,), dtype=np.float32)
-        self.next_states = np.empty((self.max_size,), dtype=state_dtype)
+        self.next_states = np.empty((self.max_size, input_size), dtype=np.int8)
         self.next_actions = np.empty((self.max_size,), dtype=np.int8)
+
         self.dones = np.empty((self.max_size,), dtype=np.int8)
+
         self.index = 0
         self.full = False
 
     def store(self, state, action, reward,
-              next_state, done, next_action=None):
+              next_state, next_action=None, done: int=0):
         self.states[self.index] = state
         self.actions[self.index] = action
         self.rewards[self.index] = reward
         self.next_states[self.index] = next_state
-        self.dones[self.index] = done
         self.next_actions[self.index] = next_action
+        self.dones[self.index] = done
 
         self.index = (self.index + 1) % self.max_size
         self.full = True if self.index == 0 else False
@@ -50,8 +51,8 @@ class ReplayBuffer:
             self.actions[batch_idx],
             self.rewards[batch_idx],
             self.next_states[batch_idx],
-            self.dones[batch_idx],
             self.next_actions[batch_idx],
+            self.dones[batch_idx],
         )
 
 class ActionPolicy:
@@ -62,11 +63,11 @@ class ActionPolicy:
         raise NotImplementedError
 
 class EpsilonGreedy(ActionPolicy):
-    def __init__(self, epsilon=1, eps_dec=1e-3, eps_min=0.1):
+    def __init__(self, epsilon=1, eps_dec=int(1e-3), eps_min=0.1):
+        super().__init__()
         self.epsilon = epsilon
         self.eps_dec = eps_dec
         self.eps_min = eps_min
-        super().__init__()
 
     def choose_action(self, q_values, evaluate=False):
         epsilon = self.epsilon if not evaluate else 0
@@ -87,15 +88,17 @@ class EpsilonGreedy(ActionPolicy):
                         else self.eps_min 
 
 class SoftmaxMethod(ActionPolicy):
-    def __init__(self, tau=1, tau_dec=1e-3, tau_min=0.3):
+    def __init__(self, tau=1, tau_dec=int(1e-3), tau_min=0.3):
+        super().__init__()
         self.tau = tau
         self.tau_dec = tau_dec
         self.tau_min = tau_min
 
     def choose_action(self, q_values, evaluate=False):
-        tau = self.tau if not evaluate else 1e-2
+        tau = self.tau if not evaluate else 0.01
 
         q_values_div_tau = q_values / tau
+        # for stability
         q_values_div_tau = q_values_div_tau - np.max(q_values_div_tau)
         exp_q_values = np.exp(q_values_div_tau)
         prob_q_values = exp_q_values / np.sum(exp_q_values)
@@ -113,52 +116,61 @@ class SoftmaxMethod(ActionPolicy):
                     else self.tau_min 
 
 class DRLAgent:
-    def __init__(self, action_policy: ActionPolicy,
-                 stock_no="0050.TW", n_TREND=2,
-                 state_size=None, action_size=None,
-                 alpha=0.001, gamma=0.9,
-                 episodes=1000,
-                 batch_size_=32):
+    def __init__(
+        self,
+        stock_no: str="0050.TW",
+        len_avg_days: int=2,
+        action_policy: EpsilonGreedy | SoftmaxMethod =None,
+        alpha: float=0.001,
+        gamma: float=0.9,
+        episodes: int=1000,
+        batch_size: int=128,
+        hasSecondLayer: bool=False,
+        replay_freq : int=128,
+        sync_freq: int=500,
+    ):
         self.stock_no = stock_no
-
-        self.action_policy = action_policy
-        self.state_size = state_size
-        self.action_size = action_size
-
-        self.alpha = alpha
-        self.gamma = gamma
-        self.episodes = episodes
-        self.batch_size = batch_size_
-
-        self.policy = None
-        self.apn = None
-        self.nL1 = self.action_size
-        self.nL2 = None
-
-        self.replay_freq = 64
-        self.sync_freq = 300
 
         self.TRENDS = ['up', 'down', 'stable']
         self.VOLUME_STATUS = ['high', 'low', 'normal']
         self.PORTFOLIO_STATUS = ['empty', 'holding']
-        self.STATES = list(itertools.product(*[self.TRENDS] * n_TREND,
+        self.STATES = list(itertools.product(*[self.TRENDS] * len_avg_days,
                                              self.VOLUME_STATUS,
                                              self.PORTFOLIO_STATUS))
 
         self.ACTIONS = ['buy', 'sell', 'hold']
 
+        self.action_policy = action_policy
+        self.state_size = len(self.TRENDS) * len_avg_days + len(self.VOLUME_STATUS) + 1
+        self.action_size = len(self.ACTIONS)
+
+        self.alpha = alpha
+        self.gamma = gamma
+        self.episodes = episodes
+        self.batch_size = batch_size
+
+        self.nL1 = self.action_size
+        self.nL2 = None if not hasSecondLayer else self.action_size
+
+        self.replay_freq = replay_freq
+        self.sync_freq = sync_freq
+
         self.weight_dir = os.path.join(os.getcwd(), 'model_weights')
         os.makedirs(self.weight_dir, exist_ok=True)
+
+        self.policy = None
+        self.apn = None
 
     def initialize(self):
         if self.state_size:
             ## Initialize Networks
-            self.q_network = self._build_mode(self.nL1, self.nL2)
-            self.t_network = self._build_mode(self.nL1, self.nL2)
+            self.q_network = self._build_model(self.nL1, self.nL2)
+            self.t_network = self._build_model(self.nL1, self.nL2)
             self._sync_qt_networks()
 
             ## Experience Replay Buffer
-            self.memory = ReplayBuffer(input_size=self.state_size, batch_size=self.batch_size)
+            self.memory = ReplayBuffer(input_size=self.state_size,
+                                       batch_size=self.batch_size)
         else :
             raise ValueError('Agent has not received state_size yet')
         
@@ -171,7 +183,7 @@ class DRLAgent:
     def _sync_qt_networks(self):
         self.t_network.set_weights(self.q_network.get_weights())
 
-    def _build_mode(self, n1, n2=None):
+    def _build_model(self, n1, n2=None):
         layers = [
             Input(shape=(self.state_size,)),
             Dense(n1, activation='relu'),
@@ -188,53 +200,53 @@ class DRLAgent:
         )
         return model
 
-    def _get_reward(self, price, previous_price, buy_price, portfolio, action):
-        ## version 2
-        # invalid action
-        if action == 0 and portfolio == 1:
-            return -2 # buy when holding
-        if action == 1 and portfolio == 0:
-            return -2 # sell when empty
+    def _get_reward(self, price, previous_price, buy_price, pre_portfolio, action):
+        r = (price - previous_price) / previous_price
+        if pre_portfolio == 0:
+            if action == 0:
+                r = 0
 
-        # valid action
-        if action == 0: # buy
-            r = 0.03
-            return r
+            elif action == 1:
+                r = -1
 
-        elif action == 1: # sell
-            r = (price - buy_price) / buy_price
-            if portfolio == 1: # holding
-                r += (price - previous_price) / previous_price
+            else : # action == 'hold'
+                r = -r
+                
+        else : # pre_portfolio == 'holding'
+            if action == 0:
+                r = -1
 
-            return r
+            elif action == 1:
+                if buy_price > 0:
+                    r += (price - buy_price) / buy_price
+                else :
+                    r = 0
 
-        else : # hold
-            r = (price - previous_price) / previous_price
-            if portfolio == 1: # holding
-                r += (price - buy_price) / buy_price
-            else : # empty
-                r *= -1 
+                r = r * 2 if r > 0 else r
 
-            if r > 0: # rewared holding positive behavior
-                r *= 1.2 
-
-            return r
+            else : # action == 'hold'
+                if buy_price > 0:
+                    r += (price - buy_price) / buy_price
+                else :
+                    r = 0
+                    
+        return r
 
     def _replay_experience(self):
         if self.memory.index < self.batch_size and not self.memory.full:
             return # memory not enough for a batch
 
         states, actions, rewards, \
-        next_states, dones, next_actions = self.memory.get_samples()
+        next_states, next_actions, dones = self.memory.get_samples()
 
         # predict the max next q value
         q_values = self.q_network.predict_on_batch(states)
         next_q_values = self.t_network.predict_on_batch(next_states)
         
-        # max next q values: max action values for update
+        # max next q values: get max action values for batch update
         max_next_q_values = self._get_max_next_q_values(next_q_values, next_actions)
 
-        ## update q values
+        ## update q values (in batch size)
         q_values[np.arange(self.batch_size), actions] = \
             rewards \
             + (1 - dones) * self.gamma * max_next_q_values
@@ -254,15 +266,6 @@ class DRLAgent:
         pbar = tqdm(range(self.episodes), ncols=100)
         for episode in pbar:
             pbar.set_description(f"Episode: {episode + 1}")
-
-            # if episode % 100 == 0:
-            #     print('    ', end='')
-            #     if self.apn == 'epsilon_greedy':
-            #         print(f"episode {episode:>3} progressing, "
-            #               f"epsilon {self.action_policy.epsilon:>.4f} ...")
-            #     else :
-            #         print(f"episode {episode:>3} progressing, "
-            #               f"tau {self.action_policy.tau:>.4f} ...")
 
             portfolio = 0 # 0 as empty, 1 as holding
             buy_price = 0
@@ -288,7 +291,7 @@ class DRLAgent:
                     buy_price = 0
                     portfolio = 0
 
-                done = 0 if (i != len(df) - 2) else 1
+                done = 0 if (i != len(df) - 1) else 1
 
                 ## set next state & action
                 next_state = np.append(feature_cols[i], portfolio)
@@ -296,7 +299,7 @@ class DRLAgent:
 
                 ## store experience
                 self.memory.store(state, action, reward,
-                                  next_state, done, next_action)
+                                  next_state, next_action)
 
                 ## update q value                
                 if i % self.replay_freq == 0:
@@ -320,8 +323,12 @@ class DRLAgent:
     def _get_policy_next_action(self, next_state):
         raise NotImplementedError
 
-    def _update_action(self, next_state, next_action):
-        raise NotImplementedError
+    def _update_action(self, next_state, next_action) -> int:
+        if next_action == -1: # q learning 
+            q_values = self.q_network.predict_on_batch(next_state)
+            return self.action_policy.choose_action(q_values[0])
+        else :
+            return next_action
     
     def evaluate_learning(self, df: pd.DataFrame, initial_cash=10000):
         ## Initial status
@@ -502,21 +509,31 @@ class DRLAgent:
 
 class DQNAgent(DRLAgent):
     def __init__(
-        self, action_policy,
-        state_size, action_size,
-        alpha=0.001, gamma=0.9,
-        episodes=1000,
-        batch_size_=32,
-        *,
-        apn
+        self,
+        stock_no: str="0050.TW",
+        len_avg_days: int=2,
+        action_policy: EpsilonGreedy | SoftmaxMethod = None,
+        apn: str='',
+        alpha: float=0.001,
+        gamma: float=0.9,
+        episodes: int=1000,
+        batch_size: int=128,
+        hasSecondLayer: bool=False,
+        replay_freq: int=128,
+        sync_freq: int=500,
     ):
+    # def __init__(
         super().__init__(
-            action_policy,
-            '0050.TW', 2,
-            state_size, action_size,
-            alpha, gamma,
-            episodes,
-            batch_size_
+            stock_no=stock_no,
+            len_avg_days=len_avg_days,
+            action_policy=action_policy,
+            alpha=alpha,
+            gamma=gamma,
+            episodes=episodes,
+            batch_size=batch_size,
+            hasSecondLayer=hasSecondLayer,
+            replay_freq=replay_freq,
+            sync_freq=sync_freq,
         )
         self.policy = 'DQN'
         self.apn = apn
@@ -527,21 +544,41 @@ class DQNAgent(DRLAgent):
     def _get_policy_next_action(self, next_state):
         return -1
 
-    def _update_action(self, next_state, next_action):
-        q_values = self.q_network.predict_on_batch(next_state)
-        return self.action_policy.choose_action(q_values[0])
+    # def _update_action(self, next_state, next_action):
+    #     q_values = self.q_network.predict_on_batch(next_state)
+    #     return self.action_policy.choose_action(q_values[0])
+    # def _update_action(self, next_state, next_action) -> int:
+    #     return next_action
+
 
 class DsarsaAgent(DRLAgent):
-    def __init__(self, action_policy,
-                 state_size, action_size,
-                 alpha=0.001, gamma=0.9,
-                 episodes=1000,
-                 batch_size_=32, *, apn):
-        super().__init__(action_policy,
-                         state_size, action_size,
-                         alpha, gamma,
-                         episodes,
-                         batch_size_)
+    def __init__(
+        self,
+        stock_no: str="0050.TW",
+        len_avg_days: int=2,
+        action_policy: EpsilonGreedy | SoftmaxMethod = None,
+        apn: str='',
+        alpha: float=0.001,
+        gamma: float=0.9,
+        episodes: int=1000,
+        batch_size: int=128,
+        hasSecondLayer: bool=False,
+        replay_freq: int=128,
+        sync_freq: int=500,
+
+    ):
+        super().__init__(
+            stock_no=stock_no,
+            len_avg_days=len_avg_days,
+            action_policy=action_policy,
+            alpha=alpha,
+            gamma=gamma,
+            episodes=episodes,
+            batch_size=batch_size,
+            hasSecondLayer=hasSecondLayer,
+            replay_freq=replay_freq,
+            sync_freq=sync_freq,
+        )
         self.policy = 'Dsarsa'
         self.apn = apn
 
@@ -552,8 +589,8 @@ class DsarsaAgent(DRLAgent):
         next_q_values = self.q_network.predict_on_batch(next_state)
         return self.action_policy.choose_action(next_q_values[0])
 
-    def _update_action(self, next_state, next_action) -> int:
-        return next_action
+    # def _update_action(self, next_state, next_action) -> int:
+    #     return next_action
 
 
 if __name__ == "__main__":
@@ -562,18 +599,16 @@ if __name__ == "__main__":
 
     stock_data = yf.download("0050.TW", period="max", auto_adjust=True)
 
-    stock_data = prerpocess(stock_data,
-                            hasStockSplited=True,
-                            split_date='2025-06-06',
-                            split_ratio=4)
+    stock_data = prerpocess("0050.TW", stock_data, [5, 20])
     stock_data = deep_agent_preprocess(stock_data)
+
+    # print(stock_data)
     dqn_eps_agent = DQNAgent(
         action_policy=EpsilonGreedy(),
-        state_size=10,
-        action_size=3,
-        alpha=0.001, gamma=0.1,
-        episodes=10,
-        apn='epsilon_greedy'
+        apn='epsilon_greedy',
+        alpha=0.001,
+        gamma=0.9,
+        episodes=100,
     )
     dqn_eps_agent.initialize()
     # dqn_eps_agent.load_weight('model_weights/DQN_epsilon_greedy.weights.h5')

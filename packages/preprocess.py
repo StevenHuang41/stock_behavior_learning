@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-from typing import Optional, Literal
-
+from typing import Optional, Literal, List
+import yfinance as yf
 from sklearn.preprocessing import OneHotEncoder
 
 # from sklearn.pipeline import Pipeline
@@ -9,14 +9,6 @@ from sklearn.compose import ColumnTransformer
 from sklearn import set_config
 
 set_config(transform_output='pandas')
-
-def stock_split_event(
-    df: pd.DataFrame,
-    date: Literal["YYYY-MM-DD"],
-    ratio: float
-) -> pd.DataFrame:
-    df.loc[df.index > date, ['Open', 'Close']] *= ratio
-    return df
 
 def deep_agent_preprocess(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
@@ -40,12 +32,9 @@ def deep_agent_preprocess(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def prerpocess(
+    stock_no: str,
     df: pd.DataFrame,
-    n: int | list[int]=[5, 20],
-    *,
-    hasStockSplited: bool=False,
-    split_date: Literal["YYYY-MM-DD"],
-    split_ratio: float,
+    avg_days: List[int],
 ) -> pd.DataFrame:
     df = df[['Close', 'Open', 'Volume']].copy()
 
@@ -54,23 +43,31 @@ def prerpocess(
     assert (df['Open'].to_numpy() != 0).all()
     assert (df['Close'].to_numpy() != 0).all()
 
-    # droplevel
+    ## droplevel
     df = df.droplevel('Ticker', axis=1)
 
-    # stock split: 4 for 1 after 2025-6-6
-    if hasStockSplited:
-        df = stock_split_event(df, split_date, split_ratio)
+    ## stock split
+    ticker = yf.Ticker(stock_no)
+    splits = ticker.splits
 
-    # fill 0 volume recored with avg_volume
+    if len(splits):
+        split_dates = [str(d).split(' ')[0] for d in splits.index]
+        split_ratio = splits.values
+
+        for d, r in zip(split_dates, split_ratio):
+            df.loc[df.index > d, ['Open', 'Close']] *= r
+
+    ## yf does not updates the information of 0050.TW stock split
+    ## we manuelly adjust it, but hopefully it would update in the future
+    ## should be remove in the deplopyment
+    df.loc[df.index > '2025-06-06', ['Open', 'Close']] *= 4
+        
+    ## fill 0 volume recored with avg_volume
     volume_mean = int(df['Volume'][df['Volume'] != 0].mean())
     df.loc[df['Volume'] == 0, 'Volume'] = volume_mean
 
     # add avg of n days closing price
-    list_n = n
-    if type(n) != list:
-        list_n = [n]
-
-    for d in list_n:
+    for d in avg_days:
         df[f'avg_of_{d}_days'] = \
             df['Close'].rolling(window=d).mean()
 
@@ -79,8 +76,8 @@ def prerpocess(
     ## add stock state
     # add trend state
     stable_factor = 0.001
-    col_trend = [f'Trend_{i}' for i in range(len(list_n))]
-    for i, d in enumerate(list_n):
+    col_trend = [f'Trend_{i}' for i in range(len(avg_days))]
+    for i, d in enumerate(avg_days):
         conditions = [
             (1 + stable_factor) * df[f'avg_of_{d}_days'] < df['Close'],
             (1 - stable_factor) * df[f'avg_of_{d}_days'] > df['Close'],
@@ -99,9 +96,6 @@ def prerpocess(
     df.loc[:, 'volume_state'] = \
         np.select(conditions, choices, default='normal')
 
-    # stock split: 4 for 1 after 2025-06-06
-    # df.loc[df.index > '2025-06-06', 'Close'] /= 4
-
     return df.loc[:, ['Open', 'Close', *col_trend, 'volume_state']]
     
 
@@ -112,15 +106,12 @@ if __name__ == "__main__":
                              period="max",
                              auto_adjust=True)
 
-    stock_data = prerpocess(stock_data,
-                            hasStockSplited=True,
-                            split_date='2025-06-06',
-                            split_ratio=4)
+    stock_data = prerpocess("0050.TW", stock_data, avg_days=[5, 20])
+    print(stock_data)
 
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', None)
 
     stock_data = deep_agent_preprocess(stock_data)
-
 
     print(stock_data)

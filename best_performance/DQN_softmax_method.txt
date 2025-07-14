@@ -1,0 +1,66 @@
+Final value holding:
+    cash=12.927764892578125
+    shares=48540.72180175781
+    Value=48553.64956665039
+
+Final value DQN:
+    cash=156.96988960808085
+    shares=42423.80157470703
+    Value=42580.77146431511
+
+State                                     |Best Action    | q values
+--------------------------------------------------------------------------------------------------------------
+['up' 'up' 'high' 'empty']                |buy            | buy: +0.0608    sell: -0.9458    hold: +0.0531    
+['up' 'up' 'high' 'holding']              |sell           | buy: -0.9342    sell: +0.0686    hold: +0.0598    
+['up' 'up' 'low' 'empty']                 |buy            | buy: +0.0608    sell: -0.9427    hold: +0.0524    
+['up' 'up' 'low' 'holding']               |sell           | buy: -0.9335    sell: +0.0689    hold: +0.0596    
+['up' 'up' 'normal' 'empty']              |buy            | buy: +0.0612    sell: -0.9435    hold: +0.0525    
+['up' 'up' 'normal' 'holding']            |sell           | buy: -0.9333    sell: +0.0689    hold: +0.0595    
+['up' 'down' 'high' 'empty']              |buy            | buy: +0.0622    sell: -0.9455    hold: +0.0527    
+['up' 'down' 'high' 'holding']            |sell           | buy: -0.9329    sell: +0.0691    hold: +0.0594    
+['up' 'down' 'low' 'empty']               |buy            | buy: +0.0622    sell: -0.9424    hold: +0.0520    
+['up' 'down' 'low' 'holding']             |sell           | buy: -0.9322    sell: +0.0694    hold: +0.0592    
+['up' 'down' 'normal' 'empty']            |buy            | buy: +0.0625    sell: -0.9432    hold: +0.0521    
+['up' 'down' 'normal' 'holding']          |sell           | buy: -0.9321    sell: +0.0694    hold: +0.0591    
+['up' 'stable' 'high' 'empty']            |buy            | buy: +0.0661    sell: -0.9736    hold: +0.0580    
+['up' 'stable' 'high' 'holding']          |sell           | buy: -0.9361    sell: +0.0679    hold: +0.0604    
+['up' 'stable' 'low' 'empty']             |buy            | buy: +0.0661    sell: -0.9705    hold: +0.0573    
+['up' 'stable' 'low' 'holding']           |sell           | buy: -0.9354    sell: +0.0681    hold: +0.0602    
+['up' 'stable' 'normal' 'empty']          |buy            | buy: +0.0665    sell: -0.9713    hold: +0.0574    
+['up' 'stable' 'normal' 'holding']        |sell           | buy: -0.9352    sell: +0.0682    hold: +0.0601    
+['down' 'up' 'high' 'empty']              |buy            | buy: +0.0607    sell: -0.9457    hold: +0.0540    
+['down' 'up' 'high' 'holding']            |sell           | buy: -0.9436    sell: +0.0650    hold: +0.0627    
+['down' 'up' 'low' 'empty']               |buy            | buy: +0.0619    sell: -0.9469    hold: +0.0540    
+['down' 'up' 'low' 'holding']             |sell           | buy: -0.9428    sell: +0.0653    hold: +0.0625    
+['down' 'up' 'normal' 'empty']            |buy            | buy: +0.0617    sell: -0.9459    hold: +0.0538    
+['down' 'up' 'normal' 'holding']          |sell           | buy: -0.9427    sell: +0.0653    hold: +0.0625    
+['down' 'down' 'high' 'empty']            |buy            | buy: +0.0613    sell: -0.9432    hold: +0.0533    
+['down' 'down' 'high' 'holding']          |sell           | buy: -0.9423    sell: +0.0655    hold: +0.0623    
+['down' 'down' 'low' 'empty']             |buy            | buy: +0.0625    sell: -0.9443    hold: +0.0532    
+['down' 'down' 'low' 'holding']           |sell           | buy: -0.9416    sell: +0.0657    hold: +0.0621    
+['down' 'down' 'normal' 'empty']          |buy            | buy: +0.0624    sell: -0.9433    hold: +0.0531    
+['down' 'down' 'normal' 'holding']        |sell           | buy: -0.9414    sell: +0.0658    hold: +0.0621    
+['down' 'stable' 'high' 'empty']          |buy            | buy: +0.0533    sell: -0.9286    hold: +0.0519    
+['down' 'stable' 'high' 'holding']        |sell           | buy: -0.9455    sell: +0.0642    hold: +0.0633    
+['down' 'stable' 'low' 'empty']           |buy            | buy: +0.0545    sell: -0.9298    hold: +0.0518    
+['down' 'stable' 'low' 'holding']         |sell           | buy: -0.9447    sell: +0.0645    hold: +0.0631    
+['down' 'stable' 'normal' 'empty']        |buy            | buy: +0.0543    sell: -0.9287    hold: +0.0517    
+['down' 'stable' 'normal' 'holding']      |sell           | buy: -0.9446    sell: +0.0646    hold: +0.0631    
+['stable' 'up' 'high' 'empty']            |buy            | buy: +0.0621    sell: -0.9331    hold: +0.0517    
+['stable' 'up' 'high' 'holding']          |hold           | buy: -0.9484    sell: +0.0631    hold: +0.0643    
+['stable' 'up' 'low' 'empty']             |buy            | buy: +0.0641    sell: -0.9371    hold: +0.0522    
+['stable' 'up' 'low' 'holding']           |hold           | buy: -0.9467    sell: +0.0599    hold: +0.0646    
+['stable' 'up' 'normal' 'empty']          |buy            | buy: +0.0637    sell: -0.9352    hold: +0.0518    
+['stable' 'up' 'normal' 'holding']        |hold           | buy: -0.9470    sell: +0.0617    hold: +0.0643    
+['stable' 'down' 'high' 'empty']          |buy            | buy: +0.0627    sell: -0.9303    hold: +0.0510    
+['stable' 'down' 'high' 'holding']        |hold           | buy: -0.9471    sell: +0.0636    hold: +0.0639    
+['stable' 'down' 'low' 'empty']           |buy            | buy: +0.0647    sell: -0.9343    hold: +0.0514    
+['stable' 'down' 'low' 'holding']         |hold           | buy: -0.9460    sell: +0.0627    hold: +0.0638    
+['stable' 'down' 'normal' 'empty']        |buy            | buy: +0.0643    sell: -0.9324    hold: +0.0511    
+['stable' 'down' 'normal' 'holding']      |sell           | buy: -0.9462    sell: +0.0639    hold: +0.0636    
+['stable' 'stable' 'high' 'empty']        |buy            | buy: +0.0475    sell: -0.8889    hold: +0.0453    
+['stable' 'stable' 'high' 'holding']      |hold           | buy: -0.9503    sell: +0.0624    hold: +0.0649    
+['stable' 'stable' 'low' 'empty']         |buy            | buy: +0.0495    sell: -0.8928    hold: +0.0458    
+['stable' 'stable' 'low' 'holding']       |hold           | buy: -0.9495    sell: +0.0627    hold: +0.0646    
+['stable' 'stable' 'normal' 'empty']      |buy            | buy: +0.0491    sell: -0.8910    hold: +0.0454    
+['stable' 'stable' 'normal' 'holding']    |hold           | buy: -0.9494    sell: +0.0627    hold: +0.0646    
