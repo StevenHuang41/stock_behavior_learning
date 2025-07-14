@@ -124,7 +124,7 @@ class RLAgent:
         )
 
     def train(self, df: pd.DataFrame):
-        print(f"{self.policy} agent:")
+        print(f"{self.policy} {self.action_policy} agent:")
         open_prices = df.iloc[:, 0].to_numpy()
         close_prices = df.iloc[:, 1].to_numpy()
         feature_cols = df.iloc[:, 2:].to_numpy()
