@@ -143,7 +143,7 @@ def main():
         action_policy=EpsilonGreedy(),
         apn='epsilon_greedy',
         alpha=0.001,
-        gamma=0.7,
+        gamma=0.8,
         episodes=100,
     )
     ds_eps_agent.initialize()
@@ -154,7 +154,7 @@ def main():
         action_policy=SoftmaxMethod(),
         apn='softmax_method',
         alpha=0.001,
-        gamma=0.7,
+        gamma=0.8,
         episodes=100,
     )
     ds_soft_agent.initialize()

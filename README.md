@@ -33,7 +33,10 @@ This project implements **multiple reinforcement learning (RL) agents** for stoc
 
 ### Prerequisites
 
-* Python: >=3.12
+* Python: >=3.12,<<span style="color: gold">3.13</span>  
+* (Optional) uv 
+
+
 
 ### Clone
 
@@ -49,6 +52,9 @@ git clone https://github.com/StevenHuang41/stock_behavior_learning.git
 
 ```sh
 cd stock_behavior_learning
+
+# make sure you are in an environment, eg: python -m venv .venv
+# then do source
 pip install -r requirements.txt
 
 ```

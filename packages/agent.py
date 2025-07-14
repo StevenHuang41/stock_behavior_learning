@@ -305,7 +305,7 @@ class RLAgent:
         fig.savefig(os.path.join(images_dir, fig_fname), bbox_inches='tight')
 
         ## show fig
-        plt.show()
+        # plt.show()
 
         original_stdout = sys.stdout
         os.makedirs('documents', mode=0o755, exist_ok=True)
