@@ -53,9 +53,14 @@ git clone https://github.com/StevenHuang41/stock_behavior_learning.git
 ```sh
 cd stock_behavior_learning
 
-# make sure you are in an environment, eg: python -m venv .venv
-# then do source
+# pip:
 pip install -r requirements.txt
 
+# or uv:
+uv sync --locked
 ```
 
+## Usage
+
+```
+```
