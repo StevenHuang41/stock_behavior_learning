@@ -29,6 +29,18 @@ This project implements **multiple reinforcement learning (RL) agents** for stoc
 * **Visualization:**  
     <sub>Plots portfolio values of agents and traditional strategy</sup>
 
+## Project Structure
+
+    .
+    ├── README.md
+    ├── main.py
+    ├── best_performance/
+    ├── packages/
+    ├── LICENSE
+    ├── uv.lock
+    ├── pyproject.toml
+    └── requirements.txt
+
 ## Installation
 
 ### Prerequisites
@@ -59,8 +71,16 @@ pip install -r requirements.txt
 # or uv:
 uv sync --locked
 ```
+use uv for faster installation
 
 ## Usage
 
+```sh
+python main.py [stock no]
 ```
-```
+replace `[stock no]` with your stock number (searchable on yfinance)
+
+example:
+
+
+

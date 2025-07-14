@@ -82,61 +82,62 @@ def main():
     # )
     # print(result.x)
 
-    # # agent 1: q learning, epsilon greedy
-    # q_epsilon_agent = RLAgent(
-    #     policy='q_learning',
-    #     action_policy='epsilon_greedy',
-    #     alpha=0.15, gamma=0.7,
-    # )
-    # q_epsilon_agent.train(stock_data)
+    # agent 1: q learning, epsilon greedy
+    q_epsilon_agent = RLAgent(
+        policy='q_learning',
+        action_policy='epsilon_greedy',
+        alpha=0.001, gamma=0.9,
+    )
+    q_epsilon_agent.train(stock_data)
 
-    # # agent 2: q learning, softmax method
-    # q_soft_agent = RLAgent(
-    #     policy='q_learning',
-    #     action_policy='softmax_method',
-    #     alpha=0.1, gamma=0.9,
-    # )
-    # q_soft_agent.train(stock_data)
+    # agent 2: q learning, softmax method
+    q_soft_agent = RLAgent(
+        policy='q_learning',
+        action_policy='softmax_method',
+        alpha=0.1, gamma=0.9,
+    )
+    q_soft_agent.train(stock_data)
 
     # agent 3: sarsa, epsilon greed 
-    # s_epsilon_agent = RLAgent(
-    #     policy='sarsa',
-    #     action_policy='epsilon_greedy',
-    #     alpha=0.001, gamma=0.9,
-    # )
-    # s_epsilon_agent.train(stock_data)
+    s_epsilon_agent = RLAgent(
+        policy='sarsa',
+        action_policy='epsilon_greedy',
+        alpha=0.001, gamma=0.9,
+    )
+    s_epsilon_agent.train(stock_data)
 
     # agent 4: sarsa, softmax method
-    # s_soft_agent = RLAgent(
-    #     policy='sarsa',
-    #     action_policy='softmax_method',
-    #     alpha=0.001, gamma=0.9,
-    # )
-    # s_soft_agent.train(stock_data)
+    s_soft_agent = RLAgent(
+        policy='sarsa',
+        action_policy='softmax_method',
+        alpha=0.001, gamma=0.9,
+    )
+    s_soft_agent.train(stock_data)
 
+#######################################################################
     stock_data = deep_agent_preprocess(stock_data)
 
-    # # agent 5: Deep q learning, epsilon greedy
-    # dqn_eps_agent = DQNAgent(
-    #     action_policy=EpsilonGreedy(),
-    #     apn='epsilon_greedy',
-    #     alpha=0.001,
-    #     gamma=0.9,
-    #     episodes=100,
-    # )
-    # dqn_eps_agent.initialize()
-    # dqn_eps_agent.train(stock_data)
+    # agent 5: Deep q learning, epsilon greedy
+    dqn_eps_agent = DQNAgent(
+        action_policy=EpsilonGreedy(),
+        apn='epsilon_greedy',
+        alpha=0.001,
+        gamma=0.9,
+        episodes=100,
+    )
+    dqn_eps_agent.initialize()
+    dqn_eps_agent.train(stock_data)
 
-    # # agent 6: Deep q learning, softmax method
-    # dqn_soft_agent = DQNAgent(
-    #     action_policy=SoftmaxMethod(),
-    #     apn='softmax_method',
-    #     alpha=0.001,
-    #     gamma=0.9,
-    #     episodes=100,
-    # )
-    # dqn_soft_agent.initialize()
-    # dqn_soft_agent.train(stock_data)
+    # agent 6: Deep q learning, softmax method
+    dqn_soft_agent = DQNAgent(
+        action_policy=SoftmaxMethod(),
+        apn='softmax_method',
+        alpha=0.001,
+        gamma=0.9,
+        episodes=100,
+    )
+    dqn_soft_agent.initialize()
+    dqn_soft_agent.train(stock_data)
 
     # agent 7: Deep sarsa learning, epsilon greedy
     ds_eps_agent = DsarsaAgent(
@@ -162,29 +163,29 @@ def main():
 
 ##########################################################################
 
-    # # agent 1
-    # q_epsilon_agent.evaluate_learning(stock_data)
-    # q_epsilon_agent.store_q_table()
+    # agent 1
+    q_epsilon_agent.evaluate_learning(stock_data)
+    q_epsilon_agent.store_q_table()
 
-    # # agent 2
-    # q_soft_agent.evaluate_learning(stock_data)
-    # q_soft_agent.store_q_table()
+    # agent 2
+    q_soft_agent.evaluate_learning(stock_data)
+    q_soft_agent.store_q_table()
 
-    # # agent 3
-    # s_epsilon_agent.evaluate_learning(stock_data)
-    # s_epsilon_agent.store_q_table()
+    # agent 3
+    s_epsilon_agent.evaluate_learning(stock_data)
+    s_epsilon_agent.store_q_table()
 
-    # # agent 4
-    # s_soft_agent.evaluate_learning(stock_data)
-    # s_soft_agent.store_q_table()
+    # agent 4
+    s_soft_agent.evaluate_learning(stock_data)
+    s_soft_agent.store_q_table()
 
-    # # agent 5
-    # dqn_eps_agent.evaluate_learning(stock_data)
-    # dqn_eps_agent.show_performance()
+    # agent 5
+    dqn_eps_agent.evaluate_learning(stock_data)
+    dqn_eps_agent.show_performance()
 
-    # # agent 6
-    # dqn_soft_agent.evaluate_learning(stock_data)
-    # dqn_soft_agent.show_performance()
+    # agent 6
+    dqn_soft_agent.evaluate_learning(stock_data)
+    dqn_soft_agent.show_performance()
 
     # agent 7
     ds_eps_agent.evaluate_learning(stock_data)
