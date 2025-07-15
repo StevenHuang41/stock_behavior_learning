@@ -75,12 +75,41 @@ use uv for faster installation
 
 ## Usage
 
+### Train Agents
+
 ```sh
 python main.py [stock no]
 ```
 replace `[stock no]` with your stock number (searchable on yfinance)
 
-example:
+Example:  
+![runtime example img](./readme_images/img1.png)
 
+Finish training process:  
+![finish training img](./readme_images/img2.png)
 
+After training finished, it will have three directories created in project root, `images/`, `documents/` and `model_weights/`.
 
+---
+
+### Inspect Results
+
+There are two ways to see the performance of each agent. 
+
+#### 1. Image Result
+```sh
+cd images
+open [image].png
+```
+Example:
+![show image result img](./readme_images/img3.png)
+
+##
+
+#### 2. Text Result
+```sh
+cd documents
+open [document].txt 
+```
+Example:
+![show text result img](./readme_images/img4.png)

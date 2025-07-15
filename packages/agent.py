@@ -6,6 +6,7 @@ from typing import Literal
 import os
 import sys
 from tqdm import tqdm
+import pickle
 
 class RLAgent:
     def __init__(
@@ -39,9 +40,29 @@ class RLAgent:
                                              self.VOLUME_STATUS,
                                              self.PORTFOLIO_STATUS))
 
+        self.values_learning_last = None
+
         self.ACTIONS = ['buy', 'sell', 'hold']
 
         self.Q_table = {s: {a: 0 for a in self.ACTIONS} for s in self.STATES}
+
+    def save_q_table(self):
+        os.makedirs('model_weights', 0o755, exist_ok=True)
+        with open(f'model_weights/{self.policy}_{self.action_policy}.pkl', 'wb') as f:
+            pickle.dump(self.Q_table, f)
+
+    def load_q_table(self, *, load_best=False):
+        if load_best and not os.path.exists('best_performance'):
+            return FileNotFoundError('best_performance has not been created.')
+
+        store_dir = 'best_performance' if load_best else 'model_weights'
+        file_name = f'{self.policy}_{self.action_policy}.pkl'
+
+        if os.path.isfile(f'{store_dir}/{file_name}'):
+            with open(f'{store_dir}/{file_name}', 'rb') as f:
+                self.Q_table = pickle.load(f)
+        else :
+            raise FileNotFoundError(f'{file_name} does not exist.')
 
     def _get_reward(
         self,
@@ -307,30 +328,37 @@ class RLAgent:
         ## show fig
         # plt.show()
 
-        original_stdout = sys.stdout
-        os.makedirs('documents', mode=0o755, exist_ok=True)
-        with open(f'documents/{self.policy}_{self.action_policy}.txt', 'w') as f:
-            sys.stdout = f
-            print(f"Final value traditional strategy:\n"
-                  f"    cash={cash_tra}\n"
-                  f"    shares={shares_tra * close_prices[-1]}\n"
-                  f"    Value={values_tra[-1]}")
-
-            print(f"\nFinal value {self.policy}:\n"
-                  f"    cash={cash}\n"
-                  f"    shares={shares * close_prices[-1]}\n"
-                  f"    Value={values_learning[-1]}\n")
-            sys.stdout = original_stdout
+        ## store in self
+        self.cash_tra = cash_tra
+        self.shares_tra = shares_tra * close_prices[-1]
+        self.values_tra_last = values_tra[-1]
+        self.cash = cash
+        self.shares = shares * close_prices[-1]
+        self.values_learning_last = values_learning[-1]
 
         return values_learning[-1]
 
         
 
-    def store_q_table(self):
+    def write_document(self):
+        if self.values_learning_last == None:
+            raise RuntimeError("Run write_document() after evaluate_learning().")
+
         original_stdout = sys.stdout
         os.makedirs('documents', mode=0o755, exist_ok=True)
-        with open(f'documents/{self.policy}_{self.action_policy}.txt', 'a') as f:
+        with open(f'documents/{self.policy}_{self.action_policy}.txt', 'w') as f:
             sys.stdout = f
+
+            print(f"Final value traditional strategy:\n"
+                  f"    cash={self.cash_tra}\n"
+                  f"    shares={self.shares_tra}\n"
+                  f"    Value={self.values_tra_last}")
+
+            print(f"\nFinal value {self.policy}:\n"
+                  f"    cash={self.cash}\n"
+                  f"    shares={self.shares}\n"
+                  f"    Value={self.values_learning_last}\n")
+
             print(f'{'States':<45}|{'Best Action':<15}| q values')
             print('-' * 110)
             for k in self.Q_table.keys():
@@ -358,6 +386,9 @@ if __name__ == "__main__":
         alpha=0.1, gamma=0.95,
     )
 
-    q_epsilon_agent.train(stock_data)
+    # q_epsilon_agent.train(stock_data)
+    q_epsilon_agent.load_q_table(load_best=True)
     q_epsilon_agent.evaluate_learning(stock_data)
-    q_epsilon_agent.store_q_table()
+    # q_epsilon_agent.save_q_table()
+    q_epsilon_agent.write_document()
+    # print(q_epsilon_agent.Q_table)

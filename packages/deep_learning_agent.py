@@ -155,13 +155,13 @@ class DRLAgent:
         self.replay_freq = replay_freq
         self.sync_freq = sync_freq
 
-        self.weight_dir = os.path.join(os.getcwd(), 'model_weights')
-        os.makedirs(self.weight_dir, exist_ok=True)
+        os.makedirs('model_weights', exist_ok=True)
 
         self.policy = None
         self.apn = None
 
-    def initialize(self):
+        self.values_learning_last = None
+
         if self.state_size:
             ## Initialize Networks
             self.q_network = self._build_model(self.nL1, self.nL2)
@@ -174,11 +174,17 @@ class DRLAgent:
         else :
             raise ValueError('Agent has not received state_size yet')
         
-    def load_weight(self, load_file):
-        if os.path.isfile(load_file):
-            self.q_network.load_weights(load_file)
+    def load_weight(self, *, load_best=False):
+        if load_best and not os.path.exists('best_performance'):
+            return FileNotFoundError('best_performance has not been created.')
+
+        store_dir = 'best_performance' if load_best else 'model_weights'
+        file_name = f'{self.policy}_{self.apn}.weights.h5'
+
+        if os.path.isfile(f'{store_dir}/{file_name}'):
+            self.q_network.load_weights(f'{store_dir}/{file_name}')
         else :
-            raise ValueError(f'{load_file} does not exist')
+            raise FileNotFoundError(f'{file_name} does not exist')
 
     def _sync_qt_networks(self):
         self.t_network.set_weights(self.q_network.get_weights())
@@ -316,8 +322,9 @@ class DRLAgent:
             ## decay
             self.action_policy.decay()
 
+        ## save q network weights
         self.q_network.save_weights(
-            os.path.join(self.weight_dir, f'{self.policy}_{self.apn}.weights.h5')
+            os.path.join('model_weights', f'{self.policy}_{self.apn}.weights.h5')
         )
     
     def _get_policy_next_action(self, next_state):
@@ -447,24 +454,35 @@ class DRLAgent:
         ## show fig
         # plt.show()
 
-        original_stdout = sys.stdout
-        os.makedirs('documents', mode=0o755, exist_ok=True)
-        with open(f'documents/{self.policy}_{self.apn}.txt', 'w') as f:
-            sys.stdout = f
-            print(f"Final value holding:\n"
-                  f"    cash={cash_tra}\n"
-                  f"    shares={shares_tra * close_prices[-1]}\n"
-                  f"    Value={values_tra[-1]}")
 
-            print(f"\nFinal value {self.policy}:\n"
-                  f"    cash={cash}\n"
-                  f"    shares={shares * close_prices[-1]}\n"
-                  f"    Value={values_learning[-1]}\n")
-            sys.stdout = original_stdout
+        self.cash_tra = cash_tra
+        self.shares_tra = shares_tra * close_prices[-1]
+        self.values_tra_last = values_tra[-1]
+        self.cash = cash
+        self.shares = shares * close_prices[-1]
+        self.values_learning_last = values_learning[-1]
+
+        # original_stdout = sys.stdout
+        # os.makedirs('documents', mode=0o755, exist_ok=True)
+        # with open(f'documents/{self.policy}_{self.apn}.txt', 'w') as f:
+        #     sys.stdout = f
+        #     print(f"Final value holding:\n"
+        #           f"    cash={cash_tra}\n"
+        #           f"    shares={shares_tra * close_prices[-1]}\n"
+        #           f"    Value={values_tra[-1]}")
+
+        #     print(f"\nFinal value {self.policy}:\n"
+        #           f"    cash={cash}\n"
+        #           f"    shares={shares * close_prices[-1]}\n"
+        #           f"    Value={values_learning[-1]}\n")
+        #     sys.stdout = original_stdout
 
         return values_learning[-1]
 
-    def show_performance(self):
+    def write_document(self):
+        if self.values_learning_last == None:
+            raise RuntimeError("Run write_document() after evaluate_learning().")
+
         test_data = np.array(self.STATES)
 
         encoded_data = np.column_stack([
@@ -493,8 +511,19 @@ class DRLAgent:
 
         original_stdout = sys.stdout
         os.makedirs('documents', mode=0o755, exist_ok=True)
-        with open(f'documents/{self.policy}_{self.apn}.txt', 'a') as f:
+        with open(f'documents/{self.policy}_{self.apn}.txt', 'w') as f:
             sys.stdout = f
+
+            print(f"Final value traditional strategy:\n"
+                  f"    cash={self.cash_tra}\n"
+                  f"    shares={self.shares_tra}\n"
+                  f"    Value={self.values_tra_last}")
+
+            print(f"\nFinal value {self.policy}:\n"
+                  f"    cash={self.cash}\n"
+                  f"    shares={self.shares}\n"
+                  f"    Value={self.values_learning_last}\n")
+
             print(f'{'State':<42}|{'Best Action':<15}| q values')
             print('-' * 110)
             for i, v in enumerate(test_data):
@@ -522,7 +551,6 @@ class DQNAgent(DRLAgent):
         replay_freq: int=128,
         sync_freq: int=500,
     ):
-    # def __init__(
         super().__init__(
             stock_no=stock_no,
             len_avg_days=len_avg_days,
@@ -544,13 +572,6 @@ class DQNAgent(DRLAgent):
     def _get_policy_next_action(self, next_state):
         return -1
 
-    # def _update_action(self, next_state, next_action):
-    #     q_values = self.q_network.predict_on_batch(next_state)
-    #     return self.action_policy.choose_action(q_values[0])
-    # def _update_action(self, next_state, next_action) -> int:
-    #     return next_action
-
-
 class DsarsaAgent(DRLAgent):
     def __init__(
         self,
@@ -565,7 +586,6 @@ class DsarsaAgent(DRLAgent):
         hasSecondLayer: bool=False,
         replay_freq: int=128,
         sync_freq: int=500,
-
     ):
         super().__init__(
             stock_no=stock_no,
@@ -589,9 +609,6 @@ class DsarsaAgent(DRLAgent):
         next_q_values = self.q_network.predict_on_batch(next_state)
         return self.action_policy.choose_action(next_q_values[0])
 
-    # def _update_action(self, next_state, next_action) -> int:
-    #     return next_action
-
 
 if __name__ == "__main__":
     from preprocess import prerpocess, deep_agent_preprocess
@@ -608,10 +625,10 @@ if __name__ == "__main__":
         apn='epsilon_greedy',
         alpha=0.001,
         gamma=0.9,
-        episodes=100,
+        episodes=50,
     )
-    dqn_eps_agent.initialize()
-    # dqn_eps_agent.load_weight('model_weights/DQN_epsilon_greedy.weights.h5')
-    dqn_eps_agent.train(stock_data)
+    # dqn_eps_agent.initialize()
+    dqn_eps_agent.load_weight(load_best=True)
+    # dqn_eps_agent.train(stock_data)
     dqn_eps_agent.evaluate_learning(stock_data)
-    dqn_eps_agent.show_performance()
+    dqn_eps_agent.write_document()
