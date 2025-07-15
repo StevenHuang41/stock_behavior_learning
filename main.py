@@ -82,40 +82,40 @@ def main():
     # )
     # print(result.x)
 
-    # agent 1: q learning, epsilon greedy
-    q_epsilon_agent = RLAgent(
-        policy='q_learning',
-        action_policy='epsilon_greedy',
-        alpha=0.001, gamma=0.9,
-    )
-    q_epsilon_agent.train(stock_data)
+    # # agent 1: q learning, epsilon greedy
+    # q_epsilon_agent = RLAgent(
+    #     policy='q_learning',
+    #     action_policy='epsilon_greedy',
+    #     alpha=0.001, gamma=0.9,
+    # )
+    # q_epsilon_agent.train(stock_data)
     # q_epsilon_agent.load_q_table(load_best=True)
 
-    # agent 2: q learning, softmax method
-    q_soft_agent = RLAgent(
-        policy='q_learning',
-        action_policy='softmax_method',
-        alpha=0.1, gamma=0.9,
-    )
-    q_soft_agent.train(stock_data)
+    # # agent 2: q learning, softmax method
+    # q_soft_agent = RLAgent(
+    #     policy='q_learning',
+    #     action_policy='softmax_method',
+    #     alpha=0.1, gamma=0.9,
+    # )
+    # q_soft_agent.train(stock_data)
     # q_soft_agent.load_q_table(load_best=True)
 
-    # agent 3: sarsa, epsilon greed 
-    s_epsilon_agent = RLAgent(
-        policy='sarsa',
-        action_policy='epsilon_greedy',
-        alpha=0.001, gamma=0.9,
-    )
-    s_epsilon_agent.train(stock_data)
+    # # agent 3: sarsa, epsilon greed 
+    # s_epsilon_agent = RLAgent(
+    #     policy='sarsa',
+    #     action_policy='epsilon_greedy',
+    #     alpha=0.001, gamma=0.9,
+    # )
+    # s_epsilon_agent.train(stock_data)
     # s_epsilon_agent.load_q_table(load_best=True)
 
-    # agent 4: sarsa, softmax method
-    s_soft_agent = RLAgent(
-        policy='sarsa',
-        action_policy='softmax_method',
-        alpha=0.001, gamma=0.9,
-    )
-    s_soft_agent.train(stock_data)
+    # # agent 4: sarsa, softmax method
+    # s_soft_agent = RLAgent(
+    #     policy='sarsa',
+    #     action_policy='softmax_method',
+    #     alpha=0.001, gamma=0.9,
+    # )
+    # s_soft_agent.train(stock_data)
     # s_soft_agent.load_q_table(load_best=True)
 
 #######################################################################
@@ -129,8 +129,8 @@ def main():
         gamma=0.9,
         episodes=100,
     )
-    # dqn_eps_agent.train(stock_data_)
-    dqn_eps_agent.load_weight(load_best=True)
+    dqn_eps_agent.train(stock_data_)
+    # dqn_eps_agent.load_weight(load_best=True)
 
     # agent 6: Deep q learning, softmax method
     dqn_soft_agent = DQNAgent(
@@ -140,8 +140,8 @@ def main():
         gamma=0.9,
         episodes=100,
     )
-    # dqn_soft_agent.train(stock_data_)
-    dqn_soft_agent.load_weight(load_best=True)
+    dqn_soft_agent.train(stock_data_)
+    # dqn_soft_agent.load_weight(load_best=True)
 
     # agent 7: Deep sarsa learning, epsilon greedy
     ds_eps_agent = DsarsaAgent(
@@ -151,8 +151,8 @@ def main():
         gamma=0.8,
         episodes=100,
     )
-    # ds_eps_agent.train(stock_data_)
-    ds_eps_agent.load_weight(load_best=True)
+    ds_eps_agent.train(stock_data_)
+    # ds_eps_agent.load_weight(load_best=True)
 
     # agent 8: Deep sarsa learning, softmax method
     ds_soft_agent = DsarsaAgent(
@@ -162,8 +162,8 @@ def main():
         gamma=0.8,
         episodes=100,
     )
-    # ds_soft_agent.train(stock_data_)
-    ds_soft_agent.load_weight(load_best=True)
+    ds_soft_agent.train(stock_data_)
+    # ds_soft_agent.load_weight(load_best=True)
 
 ##########################################################################
     # # agent 1
