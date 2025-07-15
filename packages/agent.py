@@ -336,6 +336,8 @@ class RLAgent:
         self.shares = shares * close_prices[-1]
         self.values_learning_last = values_learning[-1]
 
+        self.save_q_table()
+
         return values_learning[-1]
 
         

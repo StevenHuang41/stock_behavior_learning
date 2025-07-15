@@ -88,8 +88,8 @@ def main():
         action_policy='epsilon_greedy',
         alpha=0.001, gamma=0.9,
     )
-    # q_epsilon_agent.train(stock_data)
-    q_epsilon_agent.load_q_table(load_best=True)
+    q_epsilon_agent.train(stock_data)
+    # q_epsilon_agent.load_q_table(load_best=True)
 
     # agent 2: q learning, softmax method
     q_soft_agent = RLAgent(
@@ -97,8 +97,8 @@ def main():
         action_policy='softmax_method',
         alpha=0.1, gamma=0.9,
     )
-    # q_soft_agent.train(stock_data)
-    q_soft_agent.load_q_table(load_best=True)
+    q_soft_agent.train(stock_data)
+    # q_soft_agent.load_q_table(load_best=True)
 
     # agent 3: sarsa, epsilon greed 
     s_epsilon_agent = RLAgent(
@@ -106,8 +106,8 @@ def main():
         action_policy='epsilon_greedy',
         alpha=0.001, gamma=0.9,
     )
-    # s_epsilon_agent.train(stock_data)
-    s_epsilon_agent.load_q_table(load_best=True)
+    s_epsilon_agent.train(stock_data)
+    # s_epsilon_agent.load_q_table(load_best=True)
 
     # agent 4: sarsa, softmax method
     s_soft_agent = RLAgent(
@@ -115,8 +115,8 @@ def main():
         action_policy='softmax_method',
         alpha=0.001, gamma=0.9,
     )
-    # s_soft_agent.train(stock_data)
-    s_soft_agent.load_q_table(load_best=True)
+    s_soft_agent.train(stock_data)
+    # s_soft_agent.load_q_table(load_best=True)
 
 #######################################################################
     stock_data_ = deep_agent_preprocess(stock_data)
@@ -166,21 +166,21 @@ def main():
     ds_soft_agent.load_weight(load_best=True)
 
 ##########################################################################
-    # agent 1
-    q_epsilon_agent.evaluate_learning(stock_data)
-    q_epsilon_agent.write_document()
+    # # agent 1
+    # q_epsilon_agent.evaluate_learning(stock_data)
+    # q_epsilon_agent.write_document()
 
-    # agent 2
-    q_soft_agent.evaluate_learning(stock_data)
-    q_soft_agent.write_document()
+    # # agent 2
+    # q_soft_agent.evaluate_learning(stock_data)
+    # q_soft_agent.write_document()
 
-    # agent 3
-    s_epsilon_agent.evaluate_learning(stock_data)
-    s_epsilon_agent.write_document()
+    # # agent 3
+    # s_epsilon_agent.evaluate_learning(stock_data)
+    # s_epsilon_agent.write_document()
 
-    # agent 4
-    s_soft_agent.evaluate_learning(stock_data)
-    s_soft_agent.write_document()
+    # # agent 4
+    # s_soft_agent.evaluate_learning(stock_data)
+    # s_soft_agent.write_document()
 
     # agent 5
     dqn_eps_agent.evaluate_learning(stock_data_)
