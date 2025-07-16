@@ -60,7 +60,7 @@ def prerpocess(
     ## yf does not updates the information of 0050.TW stock split
     ## we manuelly adjust it, but hopefully it would update in the future
     ## should be remove in the deplopyment
-    df.loc[df.index > '2025-06-06', ['Open', 'Close']] *= 4
+    # df.loc[df.index > '2025-06-06', ['Open', 'Close']] *= 4
         
     ## fill 0 volume recored with avg_volume
     volume_mean = int(df['Volume'][df['Volume'] != 0].mean())
