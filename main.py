@@ -44,18 +44,8 @@ def main():
               'Please check the stock no.')
         sys.exit(1)
 
-    # do preprocessing
+    # preprocessing
     avg_days = [5, 20] # set average of 5, 20 days preiods
-
-    # states
-    # TRENDS = ['up', 'down', 'stable']
-    # VOLUME_STATUS = ['high', 'low', 'normal']
-    # PORTFOLIO_STATUS = ['empty', 'holding']
-
-    ACTIONS = ['buy', 'sell', 'hold']
-    # STATES = list(itertools.product(*[TRENDS] * len(avg_days),
-                                    # VOLUME_STATUS,
-                                    # PORTFOLIO_STATUS))
 
     stock_data = prerpocess(stock_no, stock_data, avg_days)
 
@@ -80,7 +70,6 @@ def main():
     #     n_calls=30,
     # )
     # print(result.x)
-
 
     """
     Usage Example for classic RL agent:
@@ -131,7 +120,7 @@ def main():
     #     alpha=0.001, gamma=0.9,
     # )
     # q_epsilon_agent.train(stock_data)
-    # q_epsilon_agent.load_q_table(load_best=True)
+    # # q_epsilon_agent.load_q_table(load_best=True)
     # q_epsilon_agent.evaluate_learning(stock_data)
     # q_epsilon_agent.write_document()
 
@@ -181,31 +170,22 @@ def main():
     #     episodes=10,
     # )
     # dqn_eps_agent.train(stock_data_)
-    # dqn_eps_agent.load_weight(load_best=True)
+    # # dqn_eps_agent.load_weight(load_best=True)
     # dqn_eps_agent.evaluate_learning(stock_data_)
     # dqn_eps_agent.write_document()
 
     # # agent 6: Deep q learning, softmax method
-    dqn_soft_agent = DQNAgent(
-        action_policy=SoftmaxMethod(),
-        apn='softmax_method',
-        alpha=0.001,
-        gamma=0.9,
-        episodes=10,
-    )
-    count = 1
-    while True:
-        dqn_soft_agent.train(stock_data_)
-        print(f"Round {count}")
-        v = dqn_soft_agent.evaluate_learning(stock_data_)
-        print(v)
-        count += 1
-        if v > 50000:
-            break
+    # dqn_soft_agent = DQNAgent(
+    #     action_policy=SoftmaxMethod(),
+    #     apn='softmax_method',
+    #     alpha=0.001,
+    #     gamma=0.9,
+    #     episodes=10,
+    # )
     # dqn_soft_agent.train(stock_data_)
     # dqn_soft_agent.load_weight(load_best=True)
     # dqn_soft_agent.evaluate_learning(stock_data_)
-    dqn_soft_agent.write_document()
+    # dqn_soft_agent.write_document()
 
     # # agent 7: Deep sarsa learning, epsilon greedy
     # ds_eps_agent = DsarsaAgent(

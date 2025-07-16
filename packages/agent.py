@@ -10,7 +10,7 @@ import pickle
 
 class RLAgent:
     def __init__(
-        self, stock_no="0050.TW", n_TREND = 2, *,
+        self, stock_no="0050.TW", len_avg_days = 2, *,
         policy: Literal['q_learning', 'sarsa'],
         action_policy: Literal['epsilon_greedy', 'softmax_method'],
         alpha=0.001, gamma=0.9,
@@ -19,7 +19,6 @@ class RLAgent:
         episodes=1000,
     ):
         self.stock_no = stock_no
-        self.n_TREND = n_TREND
 
         self.policy = policy
         self.action_policy = action_policy
@@ -36,7 +35,7 @@ class RLAgent:
         self.TRENDS = ['up', 'down', 'stable']
         self.VOLUME_STATUS = ['high', 'low', 'normal']
         self.PORTFOLIO_STATUS = ['empty', 'holding']
-        self.STATES = list(itertools.product(*[self.TRENDS] * n_TREND,
+        self.STATES = list(itertools.product(*[self.TRENDS] * len_avg_days,
                                              self.VOLUME_STATUS,
                                              self.PORTFOLIO_STATUS))
 
