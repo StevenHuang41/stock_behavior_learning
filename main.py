@@ -114,15 +114,15 @@ def main():
     and you the result in your stock behavior choose.
     """
     # agent 1: q learning, epsilon greedy
-    # q_epsilon_agent = RLAgent(
-    #     policy='q_learning',
-    #     action_policy='epsilon_greedy',
-    #     alpha=0.001, gamma=0.9,
-    # )
-    # q_epsilon_agent.train(stock_data)
-    # # q_epsilon_agent.load_q_table(load_best=True)
-    # q_epsilon_agent.evaluate_learning(stock_data)
-    # q_epsilon_agent.write_document()
+    q_epsilon_agent = RLAgent(
+        policy='q_learning',
+        action_policy='epsilon_greedy',
+        alpha=0.001, gamma=0.9,
+    )
+    q_epsilon_agent.train(stock_data)
+    # q_epsilon_agent.load_q_table(load_best=True)
+    q_epsilon_agent.evaluate_learning(stock_data)
+    q_epsilon_agent.write_document()
 
     # agent 2: q learning, softmax method
     # q_soft_agent = RLAgent(
