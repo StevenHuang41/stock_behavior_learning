@@ -10,7 +10,7 @@ from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Input, Dense # type: ignore
 from tensorflow.keras.optimizers import Adam # type: ignore
 
-from typing import Optional
+from typing import Optional, Literal
 
 from tqdm import tqdm
 
@@ -567,7 +567,7 @@ class DQNAgent(DRLAgent):
         stock_no: str="0050.TW",
         len_avg_days: int=2,
         action_policy: EpsilonGreedy | SoftmaxMethod = None,
-        apn: str='',
+        apn: Literal['epsilon_greedy', 'softmax_method']='',
         alpha: float=0.001,
         gamma: float=0.9,
         episodes: int=1000,

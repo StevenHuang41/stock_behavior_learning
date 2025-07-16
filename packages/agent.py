@@ -10,7 +10,9 @@ import pickle
 
 class RLAgent:
     def __init__(
-        self, stock_no="0050.TW", len_avg_days = 2, *,
+        self,
+        stock_no: Literal['stock no']="0050.TW",
+        len_avg_days: int=2, *,
         policy: Literal['q_learning', 'sarsa'],
         action_policy: Literal['epsilon_greedy', 'softmax_method'],
         alpha=0.001, gamma=0.9,
