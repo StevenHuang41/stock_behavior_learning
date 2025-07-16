@@ -1,66 +1,71 @@
 Final value traditional strategy:
-    cash=6.1298828125
-    shares=45061.919860839844
-    Value=45068.049743652344
+    cash=10.198272705078125
+    shares=46817.60070800781
+    Value=46827.79898071289
 
 Final value sarsa:
-    cash=137.90386818508705
-    shares=64430.63980102539
-    Value=64568.54366921048
+    cash=14.522298478557786
+    shares=54082.400817871094
+    Value=54096.92311634965
 
 States                                       |Best Action    | q values
 --------------------------------------------------------------------------------------------------------------
-('up', 'up', 'high', 'empty')                |buy            | buy : -0.4018    sell: -1.8698    hold: -0.8727    
-('up', 'up', 'high', 'holding')              |hold           | buy : -1.4345    sell: -0.4955    hold: -0.3263    
-('up', 'up', 'low', 'empty')                 |buy            | buy : -0.4149    sell: -1.9488    hold: -0.9570    
-('up', 'up', 'low', 'holding')               |hold           | buy : -1.4762    sell: -0.5347    hold: -0.3506    
-('up', 'up', 'normal', 'empty')              |buy            | buy : -0.4163    sell: -1.8978    hold: -0.8844    
-('up', 'up', 'normal', 'holding')            |hold           | buy : -1.5029    sell: -0.5655    hold: -0.3719    
-('up', 'down', 'high', 'empty')              |hold           | buy : -0.9709    sell: -1.9862    hold: -0.5425    
-('up', 'down', 'high', 'holding')            |hold           | buy : -2.0670    sell: -1.0416    hold: -0.5280    
-('up', 'down', 'low', 'empty')               |buy            | buy : -0.5129    sell: -2.1127    hold: -1.1322    
-('up', 'down', 'low', 'holding')             |hold           | buy : -1.8472    sell: -0.8988    hold: -0.4937    
-('up', 'down', 'normal', 'empty')            |buy            | buy : -0.5358    sell: -1.9146    hold: -0.9221    
-('up', 'down', 'normal', 'holding')          |sell           | buy : -1.9221    sell: -0.5261    hold: -0.9092    
-('up', 'stable', 'high', 'empty')            |buy            | buy : -0.7605    sell: -1.1757    hold: -0.9376    
-('up', 'stable', 'high', 'holding')          |hold           | buy : -1.2008    sell: -0.9253    hold: -0.7076    
-('up', 'stable', 'low', 'empty')             |buy            | buy : -0.8693    sell: -1.9755    hold: -1.2480    
-('up', 'stable', 'low', 'holding')           |hold           | buy : -1.9613    sell: -1.1194    hold: -0.4942    
-('up', 'stable', 'normal', 'empty')          |hold           | buy : -1.2331    sell: -1.9340    hold: -0.8001    
-('up', 'stable', 'normal', 'holding')        |hold           | buy : -1.9564    sell: -1.1838    hold: -0.5122    
-('down', 'up', 'high', 'empty')              |buy            | buy : -0.5750    sell: -2.2664    hold: -1.2509    
-('down', 'up', 'high', 'holding')            |hold           | buy : -1.8063    sell: -0.8686    hold: -0.4332    
-('down', 'up', 'low', 'empty')               |hold           | buy : -1.0248    sell: -2.0795    hold: -0.5259    
-('down', 'up', 'low', 'holding')             |hold           | buy : -1.6940    sell: -0.7511    hold: -0.4161    
-('down', 'up', 'normal', 'empty')            |buy            | buy : -0.4875    sell: -2.0510    hold: -1.0307    
-('down', 'up', 'normal', 'holding')          |sell           | buy : -1.7446    sell: -0.5081    hold: -0.7505    
-('down', 'down', 'high', 'empty')            |hold           | buy : -0.6446    sell: -1.6384    hold: -0.5158    
-('down', 'down', 'high', 'holding')          |sell           | buy : -1.7661    sell: -0.5311    hold: -0.7784    
-('down', 'down', 'low', 'empty')             |buy            | buy : -0.4996    sell: -1.8299    hold: -0.8287    
-('down', 'down', 'low', 'holding')           |sell           | buy : -1.7405    sell: -0.5206    hold: -0.7414    
-('down', 'down', 'normal', 'empty')          |buy            | buy : -0.5144    sell: -1.7272    hold: -0.7300    
-('down', 'down', 'normal', 'holding')        |sell           | buy : -1.7661    sell: -0.5280    hold: -0.7759    
-('down', 'stable', 'high', 'empty')          |buy            | buy : -0.7770    sell: -1.3070    hold: -0.9873    
-('down', 'stable', 'high', 'holding')        |hold           | buy : -1.3844    sell: -1.0227    hold: -0.7275    
-('down', 'stable', 'low', 'empty')           |buy            | buy : -0.7992    sell: -1.8055    hold: -1.2044    
-('down', 'stable', 'low', 'holding')         |hold           | buy : -1.8572    sell: -1.1323    hold: -0.5469    
-('down', 'stable', 'normal', 'empty')        |buy            | buy : -0.6960    sell: -1.6305    hold: -1.0869    
-('down', 'stable', 'normal', 'holding')      |sell           | buy : -1.6630    sell: -0.6929    hold: -1.1162    
-('stable', 'up', 'high', 'empty')            |hold           | buy : -1.1744    sell: -1.9471    hold: -0.6466    
-('stable', 'up', 'high', 'holding')          |hold           | buy : -1.9852    sell: -1.1556    hold: -0.4831    
-('stable', 'up', 'low', 'empty')             |hold           | buy : -1.2968    sell: -2.3137    hold: -0.7201    
-('stable', 'up', 'low', 'holding')           |hold           | buy : -1.8787    sell: -0.9381    hold: -0.3924    
-('stable', 'up', 'normal', 'empty')          |buy            | buy : -0.6269    sell: -2.2865    hold: -1.3266    
-('stable', 'up', 'normal', 'holding')        |hold           | buy : -1.9244    sell: -0.9602    hold: -0.4349    
-('stable', 'down', 'high', 'empty')          |buy            | buy : -0.6983    sell: -1.7885    hold: -1.1416    
-('stable', 'down', 'high', 'holding')        |sell           | buy : -1.6664    sell: -0.7709    hold: -1.1181    
-('stable', 'down', 'low', 'empty')           |buy            | buy : -0.5798    sell: -2.1409    hold: -1.2339    
-('stable', 'down', 'low', 'holding')         |hold           | buy : -2.0811    sell: -1.1582    hold: -0.5203    
-('stable', 'down', 'normal', 'empty')        |buy            | buy : -0.6059    sell: -2.0422    hold: -1.2043    
-('stable', 'down', 'normal', 'holding')      |hold           | buy : -2.0127    sell: -1.2242    hold: -0.6609    
-('stable', 'stable', 'high', 'empty')        |hold           | buy : -0.3124    sell: -0.3256    hold: -0.3124    
-('stable', 'stable', 'high', 'holding')      |hold           | buy : -0.4070    sell: -0.4057    hold: -0.4037    
-('stable', 'stable', 'low', 'empty')         |buy            | buy : -0.6812    sell: -0.8687    hold: -0.7347    
-('stable', 'stable', 'low', 'holding')       |hold           | buy : -0.9091    sell: -0.8165    hold: -0.7255    
-('stable', 'stable', 'normal', 'empty')      |buy            | buy : -0.6053    sell: -0.6291    hold: -0.6107    
-('stable', 'stable', 'normal', 'holding')    |sell           | buy : -0.8430    sell: -0.6672    hold: -0.7605    
+('up', 'up', 'high', 'empty')                |buy            | buy : -0.1427    sell: -1.3258    hold: -0.1508    
+('up', 'up', 'high', 'holding')              |hold           | buy : -1.3202    sell: -0.1398    hold: -0.1335    
+('up', 'up', 'low', 'empty')                 |buy            | buy : -0.1528    sell: -1.3642    hold: -0.1556    
+('up', 'up', 'low', 'holding')               |hold           | buy : -1.3595    sell: -0.1489    hold: -0.1471    
+('up', 'up', 'normal', 'empty')              |buy            | buy : -0.1521    sell: -1.3878    hold: -0.1609    
+('up', 'up', 'normal', 'holding')            |hold           | buy : -1.3777    sell: -0.1516    hold: -0.1481    
+('up', 'down', 'high', 'empty')              |buy            | buy : -0.1844    sell: -1.5754    hold: -0.1910    
+('up', 'down', 'high', 'holding')            |hold           | buy : -1.5967    sell: -0.1863    hold: -0.1844    
+('up', 'down', 'low', 'empty')               |hold           | buy : -0.1890    sell: -1.5925    hold: -0.1860    
+('up', 'down', 'low', 'holding')             |hold           | buy : -1.5931    sell: -0.1853    hold: -0.1808    
+('up', 'down', 'normal', 'empty')            |buy            | buy : -0.1865    sell: -1.5821    hold: -0.1875    
+('up', 'down', 'normal', 'holding')          |sell           | buy : -1.5920    sell: -0.1817    hold: -0.1831    
+('up', 'stable', 'high', 'empty')            |buy            | buy : -0.3232    sell: -0.9024    hold: -0.3292    
+('up', 'stable', 'high', 'holding')          |hold           | buy : -0.8854    sell: -0.3204    hold: -0.3157    
+('up', 'stable', 'low', 'empty')             |buy            | buy : -0.2453    sell: -1.3455    hold: -0.2588    
+('up', 'stable', 'low', 'holding')           |hold           | buy : -1.3268    sell: -0.2507    hold: -0.2325    
+('up', 'stable', 'normal', 'empty')          |buy            | buy : -0.2528    sell: -1.2953    hold: -0.2663    
+('up', 'stable', 'normal', 'holding')        |hold           | buy : -1.2940    sell: -0.2530    hold: -0.2503    
+('down', 'up', 'high', 'empty')              |hold           | buy : -0.1842    sell: -1.6030    hold: -0.1783    
+('down', 'up', 'high', 'holding')            |sell           | buy : -1.5825    sell: -0.1839    hold: -0.1849    
+('down', 'up', 'low', 'empty')               |hold           | buy : -0.1743    sell: -1.5714    hold: -0.1689    
+('down', 'up', 'low', 'holding')             |hold           | buy : -1.5719    sell: -0.1763    hold: -0.1759    
+('down', 'up', 'normal', 'empty')            |hold           | buy : -0.1797    sell: -1.5645    hold: -0.1742    
+('down', 'up', 'normal', 'holding')          |sell           | buy : -1.5610    sell: -0.1764    hold: -0.1878    
+('down', 'down', 'high', 'empty')            |hold           | buy : -0.1887    sell: -1.4125    hold: -0.1823    
+('down', 'down', 'high', 'holding')          |sell           | buy : -1.4105    sell: -0.1928    hold: -0.2014    
+('down', 'down', 'low', 'empty')             |hold           | buy : -0.1797    sell: -1.5081    hold: -0.1742    
+('down', 'down', 'low', 'holding')           |hold           | buy : -1.5006    sell: -0.1916    hold: -0.1901    
+('down', 'down', 'normal', 'empty')          |buy            | buy : -0.1793    sell: -1.4663    hold: -0.1797    
+('down', 'down', 'normal', 'holding')        |sell           | buy : -1.4778    sell: -0.1881    hold: -0.1931    
+('down', 'stable', 'high', 'empty')          |hold           | buy : -0.3363    sell: -0.8537    hold: -0.3301    
+('down', 'stable', 'high', 'holding')        |sell           | buy : -0.8692    sell: -0.3448    hold: -0.3562    
+('down', 'stable', 'low', 'empty')           |buy            | buy : -0.2845    sell: -1.2479    hold: -0.2880    
+('down', 'stable', 'low', 'holding')         |hold           | buy : -1.2442    sell: -0.2786    hold: -0.2769    
+('down', 'stable', 'normal', 'empty')        |buy            | buy : -0.2952    sell: -1.1681    hold: -0.3089    
+('down', 'stable', 'normal', 'holding')      |sell           | buy : -1.1492    sell: -0.3092    hold: -0.3113    
+('stable', 'up', 'high', 'empty')            |buy            | buy : -0.2433    sell: -1.3213    hold: -0.2518    
+('stable', 'up', 'high', 'holding')          |hold           | buy : -1.2979    sell: -0.2433    hold: -0.2402    
+('stable', 'up', 'low', 'empty')             |buy            | buy : -0.1786    sell: -1.5921    hold: -0.1790    
+('stable', 'up', 'low', 'holding')           |hold           | buy : -1.5940    sell: -0.1741    hold: -0.1732    
+('stable', 'up', 'normal', 'empty')          |hold           | buy : -0.1833    sell: -1.5713    hold: -0.1816    
+('stable', 'up', 'normal', 'holding')        |hold           | buy : -1.5813    sell: -0.1838    hold: -0.1801    
+('stable', 'down', 'high', 'empty')          |buy            | buy : -0.3042    sell: -1.1966    hold: -0.3114    
+('stable', 'down', 'high', 'holding')        |sell           | buy : -1.2009    sell: -0.3066    hold: -0.3080    
+('stable', 'down', 'low', 'empty')           |buy            | buy : -0.2203    sell: -1.4500    hold: -0.2229    
+('stable', 'down', 'low', 'holding')         |hold           | buy : -1.4501    sell: -0.2220    hold: -0.2216    
+('stable', 'down', 'normal', 'empty')        |buy            | buy : -0.2510    sell: -1.3506    hold: -0.2573    
+('stable', 'down', 'normal', 'holding')      |hold           | buy : -1.3540    sell: -0.2556    hold: -0.2519    
+('stable', 'stable', 'high', 'empty')        |buy            | buy : -0.1433    sell: -0.3720    hold: -0.1455    
+('stable', 'stable', 'high', 'holding')      |sell           | buy : -0.3577    sell: -0.1315    hold: -0.1391    
+('stable', 'stable', 'low', 'empty')         |buy            | buy : -0.2944    sell: -0.7260    hold: -0.3024    
+('stable', 'stable', 'low', 'holding')       |hold           | buy : -0.7193    sell: -0.2958    hold: -0.2834    
+('stable', 'stable', 'normal', 'empty')      |buy            | buy : -0.2873    sell: -0.7072    hold: -0.2937    
+('stable', 'stable', 'normal', 'holding')    |hold           | buy : -0.7284    sell: -0.2900    hold: -0.2790    
+
+Today Date: 2025-07-16
+    Next Action:
+        portfolio holding —> hold
+        portfolio empty   —> buy

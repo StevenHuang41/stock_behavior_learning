@@ -1,12 +1,12 @@
 Final value traditional strategy:
-    cash=10.713218688964844
-    shares=45036.79861450195
-    Value=45047.51183319092
+    cash=10.200042724609375
+    shares=46771.201416015625
+    Value=46781.401458740234
 
 Final value q_learning:
-    cash=183.58654873119667
-    shares=89279.99725341797
-    Value=89463.58380214917
+    cash=49.68765747980797
+    shares=92937.6028137207
+    Value=92987.29047120051
 
 States                                       |Best Action    | q values
 --------------------------------------------------------------------------------------------------------------
@@ -63,4 +63,9 @@ States                                       |Best Action    | q values
 ('stable', 'stable', 'low', 'empty')         |hold           | buy : +0.0104    sell: -0.3528    hold: +0.0488    
 ('stable', 'stable', 'low', 'holding')       |sell           | buy : -0.4202    sell: +0.0652    hold: +0.0147    
 ('stable', 'stable', 'normal', 'empty')      |buy            | buy : +0.0571    sell: -0.3641    hold: +0.0121    
-('stable', 'stable', 'normal', 'holding')    |hold           | buy : -0.3630    sell: +0.0157    hold: +0.0724    
+('stable', 'stable', 'normal', 'holding')    |sell           | buy : -0.3630    sell: +0.0157    hold: +0.0000    
+
+Today Date: 2025-07-16
+    Next Action:
+        portfolio holding —> hold
+        portfolio empty   —> buy

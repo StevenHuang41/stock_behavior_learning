@@ -46,7 +46,7 @@ class RLAgent:
 
         self.Q_table = {s: {a: 0 for a in self.ACTIONS} for s in self.STATES}
 
-    def save_q_table(self):
+    def _save_q_table(self):
         os.makedirs('model_weights', 0o755, exist_ok=True)
         with open(f'model_weights/{self.policy}_{self.action_policy}.pkl', 'wb') as f:
             pickle.dump(self.Q_table, f)
@@ -209,6 +209,8 @@ class RLAgent:
                 self.tau = self.tau - self.tau_dec \
                             if self.tau > self.tau_min \
                             else self.tau_min
+        
+  
             
     def evaluate_learning(self, df: pd.DataFrame, initial_cash=10000) -> float:
         ## Initial status
@@ -317,6 +319,18 @@ class RLAgent:
                  f'holding growth:  {hpc:^+9.2f} %', fontsize=12, color=hpc_c)
         fig.text(0.75, 0.67,
                  f'relative change: {cpc:^+9.2f} %', fontsize=12, color=cpc_c)
+
+        self.today_date = str(df.index[-1]).split(' ')[0]
+        empty_state = (*df.iloc[-1, 2:].to_numpy(), 'empty')
+        holding_state = (*df.iloc[-1, 2:].to_numpy(), 'holding')
+        self.empty_action = self._choose_action(empty_state, evaluate=True)
+        self.holding_action = self._choose_action(holding_state, evaluate=True)
+
+        fig.text(0.74, 0.5,  f'Today Date : {self.today_date}', fontsize=12)
+        fig.text(0.74, 0.45, f'Next Action:', fontsize=12)
+        fig.text(0.75, 0.41, f'portfolio holding —> {self.holding_action}', fontsize=12)
+        fig.text(0.75, 0.37, f'portfolio empty   —> {self.empty_action}', fontsize=12)
+
         ax.legend()
 
         ## save fig
@@ -336,7 +350,7 @@ class RLAgent:
         self.shares = shares * close_prices[-1]
         self.values_learning_last = values_learning[-1]
 
-        self.save_q_table()
+        self._save_q_table()
 
         return values_learning[-1]
 
@@ -370,6 +384,11 @@ class RLAgent:
                     print(f"{i:<4}: {v:+.4f}", end='    ')
 
                 print()
+
+            print(f"\nToday Date: {self.today_date}\n"
+                  f"    Next Action:\n"
+                  f"        portfolio holding —> {self.holding_action}\n"
+                  f"        portfolio empty   —> {self.empty_action}")
         
             sys.stdout = original_stdout
 
@@ -391,6 +410,5 @@ if __name__ == "__main__":
     # q_epsilon_agent.train(stock_data)
     q_epsilon_agent.load_q_table(load_best=True)
     q_epsilon_agent.evaluate_learning(stock_data)
-    # q_epsilon_agent.save_q_table()
     q_epsilon_agent.write_document()
     # print(q_epsilon_agent.Q_table)

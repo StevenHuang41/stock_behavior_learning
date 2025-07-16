@@ -2,7 +2,13 @@
 
 This project implements **multiple reinforcement learning (RL) agents** for stock trading using historical data from Yahoo Finance (yf). It contains both classic RL methods (q-learning and SARSA) and deep RL (Deep Q-Networks, Deep SARSA), with multiple action selection strategies (epsilon-greedy, softmax).
 
-## Overview
+## Motivation
+
+The idea for this project began when I found myself stuck in a losing position in the stock market——a situation familiar to many investors. Without a solid trading strategy or market knowledge, I understood how easy it was to make emotional decisions.
+
+This experience motivated me to explore whether an **AI agent** could learn make smarter decisions in buy, sell, or hold based on historical data. By leveraging RL techniques, my goal is to build a sys tem that can help avoid getting "underwater" on investments by providing data-driven choices.
+
+## Table of Content
 
 - [Features](#features)
 - [Installation](#installation)

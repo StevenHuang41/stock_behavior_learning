@@ -263,11 +263,11 @@ class DRLAgent:
     def _get_max_next_q_values(self, next_q_values, next_actions):
         raise NotImplementedError
 
-    def train(self, df):
+    def train(self, df: pd.DataFrame):
         print(f"{self.policy} {self.apn} agent:")
-        open_prices = df['Open'].values
-        close_prices = df['Close'].values
-        feature_cols = df.values[:, 2:]
+        open_prices = df['Open'].to_numpy()
+        close_prices = df['Close'].to_numpy()
+        feature_cols = df.iloc[:, 2:].to_numpy()
 
         pbar = tqdm(range(self.episodes), ncols=100)
         for episode in pbar:
@@ -297,7 +297,7 @@ class DRLAgent:
                     buy_price = 0
                     portfolio = 0
 
-                done = 0 if (i != len(df) - 1) else 1
+                done = 0 if i != len(df) - 1 else 1
 
                 ## set next state & action
                 next_state = np.append(feature_cols[i], portfolio)
@@ -321,6 +321,9 @@ class DRLAgent:
 
             ## decay
             self.action_policy.decay()
+
+        self.today_date = df.index[-1]
+        self.next_day_action = action
 
         ## save q network weights
         self.q_network.save_weights(
@@ -443,6 +446,38 @@ class DRLAgent:
                  f'holding growth:  {hpc:^+9.2f} %', fontsize=12, color=hpc_c)
         fig.text(0.75, 0.67,
                  f'relative change: {cpc:^+9.2f} %', fontsize=12, color=cpc_c)
+
+        self.today_date = str(df.index[-1]).split(' ')[0]
+        empty_state = np.append(df.iloc[-1, 2:].to_numpy(), 0)
+        holding_state = np.append(df.iloc[-1, 2:].to_numpy(), 1)
+
+        q_values_e = self.q_network.predict_on_batch(empty_state[np.newaxis, :])
+        q_values_h = self.q_network.predict_on_batch(holding_state[np.newaxis, :])
+
+        empty_action = self.action_policy.choose_action(q_values_e[0], evaluate=True)
+        holding_action = self.action_policy.choose_action(q_values_h[0], evaluate=True)
+
+        if empty_action == 0:
+            self.empty_action = 'buy'
+        else :
+            if empty_action == 1:
+                self.empty_action = 'sell'
+            else :
+                self.empty_action = 'hold'
+
+        if holding_action == 0:
+            self.holding_action = 'buy'
+        else :
+            if holding_action == 1:
+                self.holding_action = 'sell'
+            else :
+                self.holding_action = 'hold'
+
+        fig.text(0.74, 0.5,  f'Today Date : {self.today_date}', fontsize=12)
+        fig.text(0.74, 0.45, f'Next Action:', fontsize=12)
+        fig.text(0.75, 0.41, f'portfolio holding —> {self.holding_action}', fontsize=12)
+        fig.text(0.75, 0.37, f'portfolio empty   —> {self.empty_action}', fontsize=12)
+
         ax.legend()
 
         ## save fig
@@ -461,21 +496,6 @@ class DRLAgent:
         self.cash = cash
         self.shares = shares * close_prices[-1]
         self.values_learning_last = values_learning[-1]
-
-        # original_stdout = sys.stdout
-        # os.makedirs('documents', mode=0o755, exist_ok=True)
-        # with open(f'documents/{self.policy}_{self.apn}.txt', 'w') as f:
-        #     sys.stdout = f
-        #     print(f"Final value holding:\n"
-        #           f"    cash={cash_tra}\n"
-        #           f"    shares={shares_tra * close_prices[-1]}\n"
-        #           f"    Value={values_tra[-1]}")
-
-        #     print(f"\nFinal value {self.policy}:\n"
-        #           f"    cash={cash}\n"
-        #           f"    shares={shares * close_prices[-1]}\n"
-        #           f"    Value={values_learning[-1]}\n")
-        #     sys.stdout = original_stdout
 
         return values_learning[-1]
 
@@ -532,6 +552,11 @@ class DRLAgent:
                     print(f"{n}:{test_q_values[i, j]:>+8.4f}", end='    ')
 
                 print()
+
+            print(f"\nToday Date: {self.today_date}\n"
+                  f"    Next Action:\n"
+                  f"        portfolio holding —> {self.holding_action}\n"
+                  f"        portfolio empty   —> {self.empty_action}")
 
             sys.stdout = original_stdout
 

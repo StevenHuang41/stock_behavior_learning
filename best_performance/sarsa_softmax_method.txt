@@ -1,12 +1,12 @@
 Final value traditional strategy:
-    cash=21.964401245117188
-    shares=46643.03985595703
-    Value=46665.00425720215
+    cash=10.198272705078125
+    shares=46817.60070800781
+    Value=46827.79898071289
 
 Final value sarsa:
-    cash=57.789177924001706
-    shares=62651.879806518555
-    Value=62709.66898444256
+    cash=89.56062013100018
+    shares=48432.000732421875
+    Value=48521.561352552875
 
 States                                       |Best Action    | q values
 --------------------------------------------------------------------------------------------------------------
@@ -64,3 +64,8 @@ States                                       |Best Action    | q values
 ('stable', 'stable', 'low', 'holding')       |hold           | buy : -0.7193    sell: -0.2958    hold: -0.2834    
 ('stable', 'stable', 'normal', 'empty')      |buy            | buy : -0.2873    sell: -0.7072    hold: -0.2937    
 ('stable', 'stable', 'normal', 'holding')    |hold           | buy : -0.7284    sell: -0.2900    hold: -0.2790    
+
+Today Date: 2025-07-16
+    Next Action:
+        portfolio holding —> hold
+        portfolio empty   —> buy
