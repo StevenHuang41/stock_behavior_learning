@@ -9,3 +9,6 @@ __pycache__/
 images/
 documents/
 model_weights/
+
+best_performance/
+!best_performance
