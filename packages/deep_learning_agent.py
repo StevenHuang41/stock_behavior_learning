@@ -149,7 +149,7 @@ class DRLAgent:
         self.episodes = episodes
         self.batch_size = batch_size
 
-        self.nL1 = self.action_size
+        self.nL1 = self.state_size
         self.nL2 = None if not hasSecondLayer else self.action_size
 
         self.replay_freq = replay_freq
@@ -650,10 +650,9 @@ if __name__ == "__main__":
         apn='epsilon_greedy',
         alpha=0.001,
         gamma=0.9,
-        episodes=50,
+        episodes=10,
     )
-    # dqn_eps_agent.initialize()
-    dqn_eps_agent.load_weight(load_best=True)
-    # dqn_eps_agent.train(stock_data)
+    # dqn_eps_agent.load_weight(load_best=True)
+    dqn_eps_agent.train(stock_data)
     dqn_eps_agent.evaluate_learning(stock_data)
     dqn_eps_agent.write_document()
